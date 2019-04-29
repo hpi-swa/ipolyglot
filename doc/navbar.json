@@ -1,0 +1,18 @@
+{
+    "Installation": "install.md",
+    "Usage": "usage.md",
+    "Features": {
+        "01. Text output": "hello.ipynb",
+        "02. Asynchronous output": "async.ipynb",
+        "03. Custom output": "custom.ipynb",
+        "04. TAB completion": "complete.md",
+        "05. Shift-TAB inspection": "inspect.md"
+    },
+    "Tutorials": {
+        "N. Riesco": {
+            "01. IJavascript source code overview": "overview.md",
+            "02. Global object": "n-riesco.global.ipynb",
+            "03. Keyword this": "n-riesco.this.ipynb"
+        }
+    }
+}
