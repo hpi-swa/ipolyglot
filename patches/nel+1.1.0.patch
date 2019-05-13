@@ -34,10 +34,10 @@ index f2391d6..772745a 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..8ad1105 100755
+index 6935d32..5046701 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -314,5 +314,19 @@ function inspect(object) {
+@@ -314,5 +314,16 @@ function inspect(object) {
  }
  
  function run(code) {
@@ -52,9 +52,6 @@ index 6935d32..8ad1105 100755
 +    }
 +
 +    const actualCode = code.split('\n').slice(1).join('\n');
-+
-+    console.log("******************+")
-+    console.log(Polyglot.eval(magic, actualCode));
 +
 +    return Polyglot.eval(magic, actualCode);
  }
