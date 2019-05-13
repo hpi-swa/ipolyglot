@@ -318,7 +318,7 @@ function parseCommandArgs(context, options) {
     if (context.flag.specPath === "full") {
         context.args.kernel = [
             context.path.node,
-            context.path.kernel,
+            context.path.kernel
         ].concat(context.args.kernel);
     } else {
         context.args.kernel = [
