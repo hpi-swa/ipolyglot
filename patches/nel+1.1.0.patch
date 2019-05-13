@@ -1,0 +1,35 @@
+diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
+index f2391d6..dfc4b92 100755
+--- a/node_modules/nel/lib/nel.js
++++ b/node_modules/nel/lib/nel.js
+@@ -199,7 +199,7 @@ Session._command = paths.node;
+  * @member {String[]}
+  * @private
+  */
+-Session._args = ["--eval", server]; // --eval workaround
++Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
+ 
+ /**
+  * Combination of a piece of code to be run within a session and all the
+diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
+index 6935d32..5046701 100755
+--- a/node_modules/nel/lib/server/main.js
++++ b/node_modules/nel/lib/server/main.js
+@@ -314,5 +314,16 @@ function inspect(object) {
+ }
+ 
+ function run(code) {
+-    return vm.runInThisContext(code);
++
++    let magic = '';
++
++    if(code.startsWith('%polyglot ')){
++        magic = code.split('\n')[0].replace('%polyglot ', '');
++    } else {
++        return vm.runInThisContext(code);
++    }
++
++    const actualCode = code.split('\n').slice(1).join('\n');
++
++    return Polyglot.eval(magic, actualCode);
+ }
