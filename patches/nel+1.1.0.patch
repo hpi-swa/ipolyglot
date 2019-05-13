@@ -1,7 +1,29 @@
+diff --git a/node_modules/nel/lib/log.js b/node_modules/nel/lib/log.js
+index ed2530e..f972d63 100644
+--- a/node_modules/nel/lib/log.js
++++ b/node_modules/nel/lib/log.js
+@@ -44,7 +44,7 @@ module.exports = newLogger;
+ function newLogger(tag) {
+     if (process.env.DEBUG) global.DEBUG = true;
+ 
+-    if (!global.DEBUG) return function dontLog() {};
++    if (true) return function dontLog() {};
+ 
+     var log;
+     try {
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..dfc4b92 100755
+index f2391d6..772745a 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
+@@ -157,7 +157,7 @@ function Session(nelConfig) {
+      */
+     this._config = {
+         cwd: nelConfig.cwd,
+-        stdio: global.DEBUG ?
++        stdio: true ?
+             [process.stdin, process.stdout, process.stderr, "ipc"] :
+             ["ignore", "ignore", "ignore", "ipc"],
+     };
 @@ -199,7 +199,7 @@ Session._command = paths.node;
   * @member {String[]}
   * @private
@@ -12,10 +34,10 @@ index f2391d6..dfc4b92 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..5046701 100755
+index 6935d32..8ad1105 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -314,5 +314,16 @@ function inspect(object) {
+@@ -314,5 +314,19 @@ function inspect(object) {
  }
  
  function run(code) {
@@ -30,6 +52,9 @@ index 6935d32..5046701 100755
 +    }
 +
 +    const actualCode = code.split('\n').slice(1).join('\n');
++
++    console.log("******************+")
++    console.log(Polyglot.eval(magic, actualCode));
 +
 +    return Polyglot.eval(magic, actualCode);
  }
