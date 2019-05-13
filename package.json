@@ -30,7 +30,8 @@
         "ijsnotebook": "bin/ijsnotebook.js"
     },
     "dependencies": {
-        "jp-kernel": "1"
+        "jp-kernel": "1",
+        "patch-package": "^6.1.2"
     },
     "devDependencies": {
         "debug": "2",
@@ -45,6 +46,7 @@
         "doc:publish": "node scripts/doc-publish.js gh-pages https://github.com/n-riesco/ijavascript",
         "lint": "eslint bin lib test",
         "test:ijskernel": "mocha test/ijskernel.js",
-        "test": "npm run lint && npm run test:ijskernel"
+        "test": "npm run lint && npm run test:ijskernel",
+        "postinstall": "patch-package"
     }
 }
