@@ -519,23 +519,23 @@ function installKernelAsync(context, callback) {
 
     // Create temporary spec folder
     var tmpdir = makeTmpdir();
-    var specDir = path.join(tmpdir, "javascript");
+    var specDir = path.join(tmpdir, "polyglot");
     fs.mkdirSync(specDir);
 
     // Create spec file
     var specFile = path.join(specDir, "kernel.json");
     var spec = {
         argv: context.args.kernel,
-        display_name: "Javascript (Node.js)",
-        language: "javascript",
+        display_name: "Polyglot (GraalJS)",
+        language: "polyglot",
     };
     fs.writeFileSync(specFile, JSON.stringify(spec));
 
     // Copy logo files
-    var logoDir = path.join(context.path.images, "nodejs");
-    var logo32Src = path.join(logoDir, "js-green-32x32.png");
+    var logoDir = path.join(context.path.images, "polyglot");
+    var logo32Src = path.join(logoDir, "polyglot-32x32.png");
     var logo32Dst = path.join(specDir, "logo-32x32.png");
-    var logo64Src = path.join(logoDir, "js-green-64x64.png");
+    var logo64Src = path.join(logoDir, "polyglot-64x64.png");
     var logo64Dst = path.join(specDir, "logo-64x64.png");
     copyAsync(logo32Src, logo32Dst, function() {
         copyAsync(logo64Src, logo64Dst, function() {
