@@ -14,24 +14,23 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..dd8e11b 100755
+index 6935d32..f9700fe 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -314,5 +314,16 @@ function inspect(object) {
+@@ -313,6 +313,15 @@ function inspect(object) {
+     }
  }
  
- function run(code) {
--    return vm.runInThisContext(code);
-+    console.info('Received new code cell, processing...')
-+    let magic = '';
+-function run(code) {
++function run(rawCode) {
++    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
-+    if(code.startsWith('%polyglot ')){
-+        magic = code.split('\n')[0].replace('%polyglot ', '');
-+    } else {
-+        return vm.runInThisContext(code);
++    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
++        const rawCodeSplit = rawCode.split('\n');
++        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
++        const code = rawCodeSplit.slice(1).join('\n');
++        return Polyglot.eval(languageFromMagic, code);
 +    }
 +
-+    const actualCode = code.split('\n').slice(1).join('\n');
-+
-+    return Polyglot.eval(magic, actualCode);
+     return vm.runInThisContext(code);
  }
