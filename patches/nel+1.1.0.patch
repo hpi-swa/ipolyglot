@@ -14,10 +14,10 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..f9700fe 100755
+index 6935d32..043a93a 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -313,6 +313,15 @@ function inspect(object) {
+@@ -313,6 +313,40 @@ function inspect(object) {
      }
  }
  
@@ -27,9 +27,34 @@ index 6935d32..f9700fe 100755
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
 +        const rawCodeSplit = rawCode.split('\n');
-+        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
-+        const code = rawCodeSplit.slice(1).join('\n');
-+        return Polyglot.eval(languageFromMagic, code);
++        const firstLine = rawCodeSplit.shift();
++
++        const firstLineSplit = firstLine.split(' ');
++        const languageFromMagic = firstLineSplit[1];
++        const varsToBeExported = firstLineSplit.slice(2);
++
++        const code = rawCodeSplit.join('\n');
++
++        let varExportCode = varsToBeExported.reduce(
++            (code, varIdentifier) => {
++                let newExportLine = '';
++                if (languageFromMagic === 'js' || languageFromMagic === 'ruby') {
++                    newExportLine = `Polyglot.export('${varIdentifier}', ${varIdentifier})`;
++                } else if (languageFromMagic === 'python') {
++                    newExportLine = `import polyglot;polyglot.export_value(${varIdentifier}, '${varIdentifier}')`;
++                } else if (languageFromMagic === 'R') {
++                    newExportLine = `export('${varIdentifier}', ${varIdentifier})`;
++                }
++
++                code.push(newExportLine);
++                return code;
++            }, []
++        );
++        const separator = languageFromMagic === 'js' ? ';' : '';
++        varExportCode = varExportCode.join(`${separator}\n`);
++
++        const augmentedCode = `${code}${separator}\n${varExportCode}${separator}`;
++        return Polyglot.eval(languageFromMagic, augmentedCode);
 +    }
 +
      return vm.runInThisContext(code);
