@@ -14,10 +14,10 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..11e4811 100755
+index 6935d32..685b7ee 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -313,6 +313,51 @@ function inspect(object) {
+@@ -313,6 +313,50 @@ function inspect(object) {
      }
  }
  
@@ -35,7 +35,7 @@ index 6935d32..11e4811 100755
 +
 +        const code = rawCodeSplit.join('\n');
 +        const evalResultToBeReturned = Polyglot.eval(languageFromMagic, code);
-+        console.log('evaluation of actual code succeeded');
++        console.debug('evaluation of actual code succeeded');
 +
 +        let varExportCodeStatements = varsToBeExported.reduce(
 +            (code, varIdentifier) => {
@@ -43,8 +43,9 @@ index 6935d32..11e4811 100755
 +                if (languageFromMagic === 'js') {
 +                    newExportLine = `Polyglot.export('${varIdentifier}', ${varIdentifier})`;
 +                } else if (languageFromMagic === 'ruby') {
-+                    // newExportLine = `Polyglot.export('${varIdentifier}', ${varIdentifier})`;
-+                    newExportLine = `Polyglot.export('${varIdentifier}', ${varIdentifier})\n'an expression'`;
++                    // attempt to export the var prefixed with the global var identifier '$'
++                    // as a workaround for https://github.com/oracle/truffleruby/issues/1695
++                    newExportLine = `Polyglot.export('${varIdentifier}', $${varIdentifier})`;
 +                } else if (languageFromMagic === 'python') {
 +                    newExportLine = `import polyglot;polyglot.export_value(${varIdentifier}, '${varIdentifier}')`;
 +                } else if (languageFromMagic === 'R') {
@@ -58,12 +59,10 @@ index 6935d32..11e4811 100755
 +
 +        const separator = languageFromMagic === 'js' ? ';' : '';
 +        varExportCode = varExportCodeStatements.join(`${separator}\n`) + separator;
-+        console.log('varExportCode to be evaluated in the next step');
-+        console.log('--------------');
-+        console.log(varExportCode);
-+        console.log('--------------');
++        console.debug('varExportCode to be evaluated in the next step');
++        console.debug('--------------\n' + varExportCode + '\n--------------');
 +        Polyglot.eval(languageFromMagic, varExportCode);
-+        console.log('evaluation of var export code succeeded');
++        console.debug('evaluation of var export code succeeded');
 +
 +        return evalResultToBeReturned;
 +    }
