@@ -13,36 +13,46 @@ index f2391d6..05874d7 100755
  
  /**
   * Combination of a piece of code to be run within a session and all the
+diff --git a/node_modules/nel/lib/server/context.js b/node_modules/nel/lib/server/context.js
+index 1718dc3..72740ed 100644
+--- a/node_modules/nel/lib/server/context.js
++++ b/node_modules/nel/lib/server/context.js
+@@ -437,6 +437,16 @@ function defaultMimer(result) { // eslint-disable-line complexity
+         };
+     }
+ 
++    if (typeof result === "object") {
++        try {
++            result._toMime;
++        } catch (error) {
++            return {
++                "text/plain": "undefined"
++            };
++        }
++    }
++
+     if (result === null) {
+         return {
+             "text/plain": "null"
+@@ -455,7 +465,7 @@ function defaultMimer(result) { // eslint-disable-line complexity
+ 
+     if (!("text/plain" in mime)) {
+         try {
+-            mime["text/plain"] = util.inspect(result);
++            mime["text/plain"] = util.inspect('' + result).replace(/^'(.*)'$/, '$1');;
+         } catch (error) {}
+     }
+ 
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..b98ccc4 100755
+index 6935d32..7f7f761 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -313,6 +313,44 @@ function inspect(object) {
+@@ -313,6 +313,15 @@ function inspect(object) {
      }
  }
  
 -function run(code) {
 -    return vm.runInThisContext(code);
-+function runInPolyglotContext(language, code) {
-+    return Polyglot.eval(language, code);
-+}
-+
-+function transformToStringRepresentation(language, result) {
-+    const languageRepresentation = {
-+        'python': 'import polyglot; repr(polyglot.import_value("__lastCellOutput"));',
-+        'ruby': 'Polyglot.import("__lastCellOutput").inspect',
-+        'R': 'toString(import("__lastCellOutput"))',
-+        'js': 'JSON.stringify(Polyglot.import("__lastCellOutput"))'
-+    }
-+    Polyglot.export('__lastCellOutput', result);
-+
-+    if (languageRepresentation[language]) {
-+        return Polyglot.eval(language, languageRepresentation[language]);
-+    }
-+
-+    return Polyglot.eval(language, languageRepresentation.language);
-+}
-+
 +function run(rawCode) {
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
@@ -50,16 +60,7 @@ index 6935d32..b98ccc4 100755
 +        const rawCodeSplit = rawCode.split('\n');
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
 +        const code = rawCodeSplit.slice(1).join('\n');
-+
-+        try {
-+            let result = runInPolyglotContext(languageFromMagic, code);
-+            if (!['number', 'string', 'boolean'].includes(typeof result)) {
-+                result = transformToStringRepresentation(languageFromMagic, result);
-+            }
-+            return result;
-+        } catch (e) {
-+            return JSON.stringify(e);
-+        }
++        return Polyglot.eval(languageFromMagic, code);
 +    }
 +
 +    return vm.runInThisContext(rawCode);
