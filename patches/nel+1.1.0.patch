@@ -14,14 +14,59 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..685b7ee 100755
+index 6935d32..ca6b62a 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -313,6 +313,50 @@ function inspect(object) {
+@@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
+ var log;
+ var requester;
+ var initialContext;
++var esprima = require('esprima');
+ 
+ // Init IPC server
+ init();
+@@ -313,6 +314,98 @@ function inspect(object) {
      }
  }
  
 -function run(code) {
++function parseDeclarations(declarations) {
++    let declarationCandidates = declarations.map(declaration => {
++        if(!declaration.hasOwnProperty('id')) {
++            return null;
++        }
++        const name = declaration['id']['name'];
++        if(!declaration['init'] ||
++            (declaration['init']['type'] !== 'Literal' && declaration['init']['type'] !== 'ArrowFunctionExpression')) {
++            return null;
++        }
++        return name;
++    });
++    return declarationCandidates.filter(e => e !== null);
++}
++
++function findNestedDeclarationKeys(parsedCode) {
++    let varDeclarations = [];
++    if(!parsedCode) {
++        return varDeclarations;
++    }
++
++    if(parsedCode['declarations'] !== undefined) {
++        varDeclarations.push(...parseDeclarations(parsedCode['declarations']));
++    }
++
++    if(Array.isArray(parsedCode)) {
++        parsedCode.forEach(object => {
++            varDeclarations.push(...findNestedDeclarationKeys(object));
++        })
++    } else if(typeof(parsedCode) === 'object') {
++        Object.keys(parsedCode).map(key => {
++            varDeclarations.push(...findNestedDeclarationKeys(parsedCode[key]));
++        })
++    }
++    return varDeclarations;
++}
++
 +function run(rawCode) {
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
@@ -31,11 +76,22 @@ index 6935d32..685b7ee 100755
 +
 +        const firstLineSplit = firstLine.split(' ');
 +        const languageFromMagic = firstLineSplit[1];
-+        const varsToBeExported = firstLineSplit.slice(2);
 +
 +        const code = rawCodeSplit.join('\n');
 +        const evalResultToBeReturned = Polyglot.eval(languageFromMagic, code);
 +        console.debug('evaluation of actual code succeeded');
++
++        let varsToBeExported = []
++        if(languageFromMagic === 'js') {
++            parsedCode = esprima.parse(code);
++            console.debug('parsed code:');
++            console.debug(JSON.stringify(parsedCode, null, 2));
++            varsToBeExported = findNestedDeclarationKeys(parsedCode);
++        } else {
++            varsToBeExported = firstLineSplit.slice(2);
++        }
++        varsToBeExported = Array.from(new Set(varsToBeExported));
++        console.log('these will be exported', varsToBeExported);
 +
 +        let varExportCodeStatements = varsToBeExported.reduce(
 +            (code, varIdentifier) => {
