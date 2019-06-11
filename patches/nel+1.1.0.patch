@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..d237d50 100755
+index 6935d32..24b0fb1 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,12 +25,12 @@ index 6935d32..d237d50 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,172 @@ function inspect(object) {
+@@ -313,6 +314,168 @@ function inspect(object) {
      }
  }
  
 -function run(code) {
-+function run(rawCode) {
++function __run(rawCode) {
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
@@ -102,18 +102,18 @@ index 6935d32..d237d50 100755
  }
 +
 +
-+// globalVariables: returning array raises error (see https://github.com/graalvm/graaljs/issues/173)
 +function defaultLanguageStatements(variableName = '__i') {
++    // globalVariables: returning actual array raises error (see: https://github.com/graalvm/graaljs/issues/173)
 +    return {
 +        'python': {
-+            'importVariable': `import polyglot; ${variableName} = polyplot.import_value("${variableName}")`,
-+            'exportVariable': `import polyglot; polyplot.export_value(${variableName}, "${variableName}")`,
-+            'globalVariables': 'import json; json.dumps(globals().keys())',
++            'importVariable': `import polyglot; ${variableName} = polyglot.import_value("${variableName}")`,
++            'exportVariable': `import polyglot; polyglot.export_value(${variableName}, "${variableName}")`,
++            'globalVariables': `repr(list(globals().keys())).replace("'", '"')`,
 +        },
 +        'R': {
 +            'importVariable': `${variableName} <- import("${variableName}")`,
 +            'exportVariable': `export("${variableName}", ${variableName})`,
-+            'globalVariables': 'ls(all.names = TRUE)',
++            'globalVariables': `paste('["', paste(ls(all.names=TRUE), collapse='", "'), '"]', sep="")`,
 +        },
 +        'ruby': {
 +            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
@@ -128,23 +128,24 @@ index 6935d32..d237d50 100755
 +    }
 +}
 +
++
++function loadGlobalVariables(language) {
++    // TODO: replace string repr with actual arrays (see: https://github.com/graalvm/graaljs/issues/173 and above)
++    return JSON.parse(Polyglot.eval(language, defaultLanguageStatements()[language]['globalVariables']));
++}
++
++
 +function loadPolyglotBlacklist(language) {
-+    let polyglotVariableBlacklist = Polyglot.import('polyglotVariableBlacklist');
-+    console.log(defaultLanguageStatements()[language]);
-+    console.log('****************************************');
++    let polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
 +    if (!polyglotVariableBlacklist) {
 +        polyglotVariableBlacklist = {};
 +    }
 +
-+    console.log(1, polyglotVariableBlacklist);
-+
 +    if (!polyglotVariableBlacklist[language]) {
-+        let newPolyglotVariableBlacklist = JSON.parse(Polyglot.eval(language, defaultLanguageStatements()[language]['globalVariables']));
++        let newPolyglotVariableBlacklist = loadGlobalVariables(language);
 +        polyglotVariableBlacklist[language] = newPolyglotVariableBlacklist;
-+        Polyglot.export('polyglotVariableBlacklist', polyglotVariableBlacklist);
++        Polyglot.export('__polyglotVariableBlacklist', polyglotVariableBlacklist);
 +    }
-+
-+    console.log(2, polyglotVariableBlacklist);
 +
 +    return polyglotVariableBlacklist[language];
 +}
@@ -157,12 +158,8 @@ index 6935d32..d237d50 100755
 +        Polyglot.export('__bindings', variableList)
 +    }
 +
-+    console.log(variableList);
-+
 +    for (let i of variableList) {
-+        console.log(defaultLanguageStatements(i)[language]['importVariable'])
 +        Polyglot.eval(language, defaultLanguageStatements(i)[language]['importVariable']);
-+        console.log(Polyglot.eval(language, i));
 +    }
 +}
 +
@@ -170,10 +167,9 @@ index 6935d32..d237d50 100755
 +function exportPolyglotVariables(language) {
 +    let polyglotVariableBlacklist = loadPolyglotBlacklist(language);
 +
-+    let newPolyglotVariables = JSON.parse(Polyglot.eval(language, defaultLanguageStatements()[language]['globalVariables']));
++    let newPolyglotVariables = loadGlobalVariables(language);
 +    let newPolyglotVariablesWoBlacklisted = newPolyglotVariables.filter(x => !polyglotVariableBlacklist.includes(x));
 +    for (let i of newPolyglotVariablesWoBlacklisted) {
-+        console.log(i, defaultLanguageStatements(i)[language]['exportVariable'])
 +        Polyglot.eval(language, defaultLanguageStatements(i)[language]['exportVariable']);
 +    }
 +
@@ -181,16 +177,16 @@ index 6935d32..d237d50 100755
 +}
 +
 +
-+function __run(rawCode) {
++function run(rawCode) {
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
 +        const rawCodeSplit = rawCode.split('\n');
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
++        const code = rawCodeSplit.slice(1).join('\n');
++
 +        loadPolyglotBlacklist(languageFromMagic);
 +        importPolyglotVariables(languageFromMagic);
-+        const code = rawCodeSplit.slice(1).join('\n');
-+        console.log(code)
 +        const result = Polyglot.eval(languageFromMagic, code);
 +        exportPolyglotVariables(languageFromMagic);
 +
