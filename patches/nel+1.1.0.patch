@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..0be3a4a 100755
+index 6935d32..d237d50 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..0be3a4a 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,171 @@ function inspect(object) {
+@@ -313,6 +314,172 @@ function inspect(object) {
      }
  }
  
@@ -102,6 +102,7 @@ index 6935d32..0be3a4a 100755
  }
 +
 +
++// globalVariables: returning array raises error (see https://github.com/graalvm/graaljs/issues/173)
 +function defaultLanguageStatements(variableName = '__i') {
 +    return {
 +        'python': {
