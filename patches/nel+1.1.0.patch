@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..8775417 100755
+index 6935d32..0be3a4a 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..8775417 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,73 @@ function inspect(object) {
+@@ -313,6 +314,171 @@ function inspect(object) {
      }
  }
  
@@ -100,3 +100,101 @@ index 6935d32..8775417 100755
 +
      return vm.runInThisContext(code);
  }
++
++
++function defaultLanguageStatements(variableName = '__i') {
++    return {
++        'python': {
++            'importVariable': `import polyglot; ${variableName} = polyplot.import_value("${variableName}")`,
++            'exportVariable': `import polyglot; polyplot.export_value(${variableName}, "${variableName}")`,
++            'globalVariables': 'import json; json.dumps(globals().keys())',
++        },
++        'R': {
++            'importVariable': `${variableName} <- import("${variableName}")`,
++            'exportVariable': `export("${variableName}", ${variableName})`,
++            'globalVariables': 'ls(all.names = TRUE)',
++        },
++        'ruby': {
++            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
++            'exportVariable': `Polyglot.export("${variableName}", ${variableName})`,
++            'globalVariables': 'require "json"; local_variables.to_json',
++        },
++        'js': {
++            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
++            'exportVariable': `Polyglot.export("${variableName}", ${variableName})`,
++            'globalVariables': 'JSON.stringify(Object.keys(global))',
++        },
++    }
++}
++
++function loadPolyglotBlacklist(language) {
++    let polyglotVariableBlacklist = Polyglot.import('polyglotVariableBlacklist');
++    console.log(defaultLanguageStatements()[language]);
++    console.log('****************************************');
++    if (!polyglotVariableBlacklist) {
++        polyglotVariableBlacklist = {};
++    }
++
++    console.log(1, polyglotVariableBlacklist);
++
++    if (!polyglotVariableBlacklist[language]) {
++        let newPolyglotVariableBlacklist = JSON.parse(Polyglot.eval(language, defaultLanguageStatements()[language]['globalVariables']));
++        polyglotVariableBlacklist[language] = newPolyglotVariableBlacklist;
++        Polyglot.export('polyglotVariableBlacklist', polyglotVariableBlacklist);
++    }
++
++    console.log(2, polyglotVariableBlacklist);
++
++    return polyglotVariableBlacklist[language];
++}
++
++
++function importPolyglotVariables(language) {
++    let variableList = Polyglot.import('__bindings');
++    if (!variableList) {
++        variableList = [];
++        Polyglot.export('__bindings', variableList)
++    }
++
++    console.log(variableList);
++
++    for (let i of variableList) {
++        console.log(defaultLanguageStatements(i)[language]['importVariable'])
++        Polyglot.eval(language, defaultLanguageStatements(i)[language]['importVariable']);
++        console.log(Polyglot.eval(language, i));
++    }
++}
++
++
++function exportPolyglotVariables(language) {
++    let polyglotVariableBlacklist = loadPolyglotBlacklist(language);
++
++    let newPolyglotVariables = JSON.parse(Polyglot.eval(language, defaultLanguageStatements()[language]['globalVariables']));
++    let newPolyglotVariablesWoBlacklisted = newPolyglotVariables.filter(x => !polyglotVariableBlacklist.includes(x));
++    for (let i of newPolyglotVariablesWoBlacklisted) {
++        console.log(i, defaultLanguageStatements(i)[language]['exportVariable'])
++        Polyglot.eval(language, defaultLanguageStatements(i)[language]['exportVariable']);
++    }
++
++    Polyglot.export('__bindings', newPolyglotVariablesWoBlacklisted);
++}
++
++
++function __run(rawCode) {
++    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
++
++    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
++        const rawCodeSplit = rawCode.split('\n');
++        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
++        loadPolyglotBlacklist(languageFromMagic);
++        importPolyglotVariables(languageFromMagic);
++        const code = rawCodeSplit.slice(1).join('\n');
++        console.log(code)
++        const result = Polyglot.eval(languageFromMagic, code);
++        exportPolyglotVariables(languageFromMagic);
++
++        return result;
++    }
++
++    return vm.runInThisContext(rawCode);
++}
