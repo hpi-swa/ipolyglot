@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..9f65db4 100755
+index 6935d32..8775417 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,48 +25,11 @@ index 6935d32..9f65db4 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,106 @@ function inspect(object) {
+@@ -313,6 +314,73 @@ function inspect(object) {
      }
  }
  
 -function run(code) {
-+function parseDeclarations(declarations) {
-+    let declarationCandidates = declarations.map(declaration => {
-+        if(!declaration.hasOwnProperty('id')) {
-+            return null;
-+        }
-+        const name = declaration['id']['name'];
-+        if(!declaration['init'] ||
-+            (declaration['init']['type'] !== 'Literal' && declaration['init']['type'] !== 'ArrowFunctionExpression')) {
-+            return null;
-+        }
-+        return name;
-+    });
-+    return declarationCandidates.filter(e => e !== null);
-+}
-+
-+function findNestedDeclarationKeys(parsedCode) {
-+    let varDeclarations = [];
-+    if(!parsedCode) {
-+        return varDeclarations;
-+    }
-+
-+    if(parsedCode['declarations'] !== undefined) {
-+        varDeclarations.push(...parseDeclarations(parsedCode['declarations']));
-+    }
-+
-+    if(Array.isArray(parsedCode)) {
-+        parsedCode.forEach(object => {
-+            varDeclarations.push(...findNestedDeclarationKeys(object));
-+        })
-+    } else if(typeof(parsedCode) === 'object') {
-+        Object.keys(parsedCode).map(key => {
-+            varDeclarations.push(...findNestedDeclarationKeys(parsedCode[key]));
-+        })
-+    }
-+    return varDeclarations;
-+}
-+
 +function run(rawCode) {
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
@@ -77,16 +40,20 @@ index 6935d32..9f65db4 100755
 +        const firstLineSplit = firstLine.split(' ');
 +        const languageFromMagic = firstLineSplit[1];
 +
++        if(languageFromMagic === 'js' && !Polyglot.import('js_blacklist')) {
++            const blacklist = Polyglot.eval('js', 'Object.keys(global)');
++            Polyglot.export('js_blacklist', blacklist);
++        }
++        const blacklist = Polyglot.import('js_blacklist')
++
 +        const code = rawCodeSplit.join('\n');
 +        const evalResultToBeReturned = Polyglot.eval(languageFromMagic, code);
 +        console.debug('evaluation of actual code succeeded');
 +
 +        let varsToBeExported = []
 +        if(languageFromMagic === 'js') {
-+            parsedCode = esprima.parse(code);
-+            console.debug('parsed code:');
-+            console.debug(JSON.stringify(parsedCode, null, 2));
-+            varsToBeExported = findNestedDeclarationKeys(parsedCode);
++            varsToBeExported = Polyglot.eval('js', 'Object.keys(global)');
++            varsToBeExported = varsToBeExported.filter(e => blacklist.indexOf(e) === -1)
 +        } else {
 +            varsToBeExported = firstLineSplit.slice(2);
 +        }
@@ -114,7 +81,7 @@ index 6935d32..9f65db4 100755
 +        );
 +
 +        const separator = languageFromMagic === 'js' ? ';' : '';
-+        varExportCode = varExportCodeStatements.join(`${separator}\n`) + separator;
++        const varExportCode = varExportCodeStatements.join(`${separator}\n`) + separator;
 +        console.debug('varExportCode to be evaluated in the next step');
 +        console.debug('--------------\n' + varExportCode + '\n--------------');
 +        Polyglot.eval(languageFromMagic, varExportCode);
