@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..24b0fb1 100755
+index 6935d32..fc4df5d 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,82 +25,12 @@ index 6935d32..24b0fb1 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,168 @@ function inspect(object) {
+@@ -313,6 +314,97 @@ function inspect(object) {
      }
  }
  
 -function run(code) {
-+function __run(rawCode) {
-+    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
-+
-+    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
-+        const rawCodeSplit = rawCode.split('\n');
-+        const firstLine = rawCodeSplit.shift();
-+
-+        const firstLineSplit = firstLine.split(' ');
-+        const languageFromMagic = firstLineSplit[1];
-+
-+        if(languageFromMagic === 'js' && !Polyglot.import('js_blacklist')) {
-+            const blacklist = Polyglot.eval('js', 'Object.keys(global)');
-+            Polyglot.export('js_blacklist', blacklist);
-+        }
-+        const blacklist = Polyglot.import('js_blacklist')
-+
-+        const code = rawCodeSplit.join('\n');
-+        const evalResultToBeReturned = Polyglot.eval(languageFromMagic, code);
-+        console.debug('evaluation of actual code succeeded');
-+
-+        let varsToBeExported = []
-+        if(languageFromMagic === 'js') {
-+            varsToBeExported = Polyglot.eval('js', 'Object.keys(global)');
-+            varsToBeExported = varsToBeExported.filter(e => blacklist.indexOf(e) === -1)
-+        } else {
-+            varsToBeExported = firstLineSplit.slice(2);
-+        }
-+        varsToBeExported = Array.from(new Set(varsToBeExported));
-+        console.log('these will be exported', varsToBeExported);
-+
-+        let varExportCodeStatements = varsToBeExported.reduce(
-+            (code, varIdentifier) => {
-+                let newExportLine = '';
-+                if (languageFromMagic === 'js') {
-+                    newExportLine = `Polyglot.export('${varIdentifier}', ${varIdentifier})`;
-+                } else if (languageFromMagic === 'ruby') {
-+                    // attempt to export the var prefixed with the global var identifier '$'
-+                    // as a workaround for https://github.com/oracle/truffleruby/issues/1695
-+                    newExportLine = `Polyglot.export('${varIdentifier}', $${varIdentifier})`;
-+                } else if (languageFromMagic === 'python') {
-+                    newExportLine = `import polyglot;polyglot.export_value(${varIdentifier}, '${varIdentifier}')`;
-+                } else if (languageFromMagic === 'R') {
-+                    newExportLine = `export('${varIdentifier}', ${varIdentifier})`;
-+                }
-+
-+                code.push(newExportLine);
-+                return code;
-+            }, []
-+        );
-+
-+        const separator = languageFromMagic === 'js' ? ';' : '';
-+        const varExportCode = varExportCodeStatements.join(`${separator}\n`) + separator;
-+        console.debug('varExportCode to be evaluated in the next step');
-+        console.debug('--------------\n' + varExportCode + '\n--------------');
-+        Polyglot.eval(languageFromMagic, varExportCode);
-+        console.debug('evaluation of var export code succeeded');
-+
-+        let exportedVarsOld = Polyglot.import('__bindings')
-+        if(!exportedVarsOld) {
-+            exportedVarsOld = [];
-+        }
-+        const exportedVarsNew = Array.from(new Set(exportedVarsOld.concat(varsToBeExported)));
-+        console.debug('new __bindings:', exportedVarsNew);
-+        Polyglot.export('__bindings', exportedVarsNew);
-+
-+        return evalResultToBeReturned;
-+    }
-+
-     return vm.runInThisContext(code);
- }
-+
+-    return vm.runInThisContext(code);
 +
 +function defaultLanguageStatements(variableName = '__i') {
 +    // globalVariables: returning actual array raises error (see: https://github.com/graalvm/graaljs/issues/173)
@@ -116,9 +46,9 @@ index 6935d32..24b0fb1 100755
 +            'globalVariables': `paste('["', paste(ls(all.names=TRUE), collapse='", "'), '"]', sep="")`,
 +        },
 +        'ruby': {
-+            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
-+            'exportVariable': `Polyglot.export("${variableName}", ${variableName})`,
-+            'globalVariables': 'require "json"; local_variables.to_json',
++            'importVariable': `$${variableName} = Polyglot.import("${variableName}")`,
++            'exportVariable': `tmp_var_name = ${variableName}.index("$") == 0 ? ${variableName}[1..-1] : ${variableName}; Polyglot.export(tmp_var_name, ${variableName})`,
++            'globalVariables': 'require "json"; global_variables.to_json',
 +        },
 +        'js': {
 +            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
@@ -194,4 +124,4 @@ index 6935d32..24b0fb1 100755
 +    }
 +
 +    return vm.runInThisContext(rawCode);
-+}
+ }
