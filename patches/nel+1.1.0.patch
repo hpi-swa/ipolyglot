@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..fc4df5d 100755
+index 6935d32..aa5cdf1 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..fc4df5d 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,97 @@ function inspect(object) {
+@@ -313,6 +314,98 @@ function inspect(object) {
      }
  }
  
@@ -34,6 +34,7 @@ index 6935d32..fc4df5d 100755
 +
 +function defaultLanguageStatements(variableName = '__i') {
 +    // globalVariables: returning actual array raises error (see: https://github.com/graalvm/graaljs/issues/173)
++    // TODO: replace string repr with actual arrays
 +    return {
 +        'python': {
 +            'importVariable': `import polyglot; ${variableName} = polyglot.import_value("${variableName}")`,
@@ -47,8 +48,8 @@ index 6935d32..fc4df5d 100755
 +        },
 +        'ruby': {
 +            'importVariable': `$${variableName} = Polyglot.import("${variableName}")`,
-+            'exportVariable': `tmp_var_name = ${variableName}.index("$") == 0 ? ${variableName}[1..-1] : ${variableName}; Polyglot.export(tmp_var_name, ${variableName})`,
-+            'globalVariables': 'require "json"; global_variables.to_json',
++            'exportVariable': `Polyglot.export("${variableName}", $${variableName})`,
++            'globalVariables': 'require "json"; global_variables.map{ |varId| varId[1..-1] }.to_json',
 +        },
 +        'js': {
 +            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
