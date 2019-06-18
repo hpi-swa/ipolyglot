@@ -9,7 +9,6 @@ define([
     $,
     Jupyter,
     events,
-    codecell
 ) {
     "use strict";
 
@@ -135,13 +134,6 @@ function html_table(jsonVars) {
     var kernel_config = cfg.kernels_config[kernelLanguage];
     var varList = JSON.parse(String(jsonVars))
 
-    // var shape_str = '';
-    // var has_shape = false;
-    // if (varList.some(listVar => "varShape" in listVar && listVar.varShape !== '')) { //if any of them have a shape
-    //     shape_str = '<th >Shape</th>';
-    //     has_shape = true;
-    // }
-
     var beg_table = '<div class=\"inspector\"><table class=\"table fixed table-condensed table-nonfluid \"><col /> \
  <col  /><col /><thead><tr><th >Name</th><th >Type</th><th >Size</th>' + '<th >Value</th></tr></thead><tr><td> \
  </td></tr>';
@@ -160,7 +152,6 @@ function html_table(jsonVars) {
 
 
     function code_exec_callback(msg) {
-        console.log(msg);
         var jsonVars = msg.content['text'];
         var notWellDefined = false;
         if (msg.content.evalue) 
@@ -177,16 +168,9 @@ function html_table(jsonVars) {
         });
     }
 
-    function tableSort() {
-        requirejs(['nbextensions/varInspector/jquery.tablesorter.min'])
-        $('#varInspector table').tablesorter()
-    }
-
     var varRefresh = function() {
         var kernelLanguage = Jupyter.notebook.metadata.kernelspec.language.toLowerCase()
         var kernel_config = cfg.kernels_config[kernelLanguage];
-        console.log("********** kernel", kernelLanguage)
-        console.log("********** kernel var refresh cmnd", kernel_config)
 
         requirejs(['nbextensions/varInspector/jquery.tablesorter.min'],
             function() {
@@ -246,7 +230,6 @@ function html_table(jsonVars) {
                     varInspector_button(); // In case button was removed 
                     // read and execute code_init (if kernel is supported)
                     read_code_init(kernel_config.library);
-                    // console.log("code_init-->", st.code_init)
                     } else {
                     console.warn(log_prefix + "Kernel not available?");
                     }
@@ -270,73 +253,6 @@ function html_table(jsonVars) {
         }
         var varInspector_wrapper = $('<div id="varInspector-wrapper"/>')
             .append(
-                $('<div id="varInspector-header"/>')
-                .addClass("header")
-                .text("Variable Inspector ")
-                .append(
-                    $("<a/>")
-                    .attr("href", "#")
-                    .text("[x]")
-                    .addClass("kill-btn")
-                    .attr('title', 'Close window')
-                    .click(function() {
-                        toggleVarInspector();
-                        return false;
-                    })
-                )
-                .append(
-                    $("<a/>")
-                    .attr("href", "#")
-                    .addClass("hide-btn")
-                    .attr('title', 'Hide Variable Inspector')
-                    .text("[-]")
-                    .click(function() {
-                        $('#varInspector-wrapper').css('position', 'fixed');
-                        $('#varInspector').slideToggle({
-                            start: function(event, ui) {
-                                // $(this).width($(this).width());
-                            },
-                            'complete': function() {
-                                    Jupyter.notebook.metadata.varInspector['varInspector_section_display'] = $('#varInspector').css('display');
-                                    save_position();
-                                    Jupyter.notebook.set_dirty();
-                            }
-                        });
-                        $('#varInspector-wrapper').toggleClass('closed');
-                        if ($('#varInspector-wrapper').hasClass('closed')) {
-                            cfg.oldHeight = $('#varInspector-wrapper').height(); //.css('height');
-                            $('#varInspector-wrapper').css({ height: 40 });
-                            $('#varInspector-wrapper .hide-btn')
-                                .text('[+]')
-                                .attr('title', 'Show Variable Inspector');
-                        } else {
-                            $('#varInspector-wrapper').height(cfg.oldHeight); //css({ height: cfg.oldHeight });
-                            $('#varInspector').height(cfg.oldHeight - $('#varInspector-header').height() - 30 )
-                            $('#varInspector-wrapper .hide-btn')
-                                .text('[-]')
-                                .attr('title', 'Hide Variable Inspector');
-                        }
-                        return false;
-                    })
-                ).append(
-                    $("<a/>")
-                    .attr("href", "#")
-                    .text("  \u21BB")
-                    .addClass("reload-btn")
-                    .attr('title', 'Reload Variable Inspector')
-                    .click(function() {
-                        //variable_inspector(cfg,st); 
-                        varRefresh();
-                        return false;
-                    })
-                ).append(
-                    $("<span/>")
-                    .html("&nbsp;&nbsp")
-                ).append(
-                    $("<span/>")
-                    .html("&nbsp;&nbsp;")
-                )
-            ).append(
                 $("<div/>").attr("id", "varInspector").addClass('varInspector')
             )
 
@@ -344,19 +260,6 @@ function html_table(jsonVars) {
         // Ensure position is fixed
         $('#varInspector-wrapper').css('position', 'fixed');
 
-        // enable dragging and save position on stop moving
-        $('#varInspector-wrapper').draggable({
-            drag: function(event, ui) {}, //end of drag function
-            start: function(event, ui) {
-                $(this).width($(this).width());
-            },
-            stop: function(event, ui) { // on save, store window position
-                    save_position();
-                    Jupyter.notebook.set_dirty();
-                // Ensure position is fixed (again)
-                $('#varInspector-wrapper').css('position', 'fixed');
-            },
-        });
 
         $('#varInspector-wrapper').resizable({
             resize: function(event, ui) {
