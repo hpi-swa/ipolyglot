@@ -127,14 +127,6 @@ index 6935d32..db0655b 100755
 +        const rawCodeSplit = rawCode.split('\n');
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
 +        const code = rawCodeSplit.slice(1).join('\n');
-+
-+        loadPolyglotBlacklist(languageFromMagic);
-+        importPolyglotVariables(languageFromMagic);
-+        const result = Polyglot.eval(languageFromMagic, code);
-+        exportPolyglotVariables(languageFromMagic);
-+
-+        return result;
 +    }
 +
-+    return vm.runInThisContext(rawCode);
  }
