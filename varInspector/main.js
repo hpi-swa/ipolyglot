@@ -48,11 +48,6 @@ define([
         'types_to_exclude': ['module', 'function', 'builtin_function_or_method', 'instance', '_Feature']
     }
 
-
-
-    //.....................global variables....
-
-
     var st = {}
     st.config_loaded = false;
     st.extension_initialized = false;
@@ -93,8 +88,6 @@ define([
         return cfg;
     }
 
-    var sortable;
-
     function toggleVarInspector() {
         toggle_varInspector(cfg, st)
     }
@@ -134,14 +127,14 @@ function html_table(jsonVars) {
     var kernel_config = cfg.kernels_config[kernelLanguage];
     var varList = JSON.parse(String(jsonVars))
 
-    var beg_table = '<div class=\"inspector\"><table class=\"table fixed table-condensed table-nonfluid \"><col /> \
+    var beg_table = '<div class=\"inspector\"><table rules="none"   class=\"table fixed table-condensed table-nonfluid \"><col /> \
  <col  /><col /><thead><tr><th >Name</th><th >Type</th><th >Size</th>' + '<th >Value</th></tr></thead><tr><td> \
  </td></tr>';
     varList.forEach(listVar => {
         var shape_col_str = '</td><td>';
         beg_table +=
             '<tr>' +
-            '<td>' + _trunc(listVar.varName, cfg.cols.lenName) + '</td><td>' + _trunc(listVar.varType, cfg.cols.lenType) +
+            '<td> <b>' + _trunc(listVar.varName, cfg.cols.lenName) + '</b></td><td>' + _trunc(listVar.varType, cfg.cols.lenType) +
             '</td><td>' + listVar.varSize + shape_col_str + _trunc(listVar.varContent, cfg.cols.lenVar) +
             '</td></tr>';
     });
@@ -160,12 +153,6 @@ function html_table(jsonVars) {
         //means that var_dic_list was cleared ==> need to retart the extension
         if (notWellDefined) varInspector_init() 
         else $('#varInspector').html(html_table(jsonVars))
-        
-        requirejs(['nbextensions/varInspector/jquery.tablesorter.min'],
-            function() {
-        setTimeout(function() { if ($('#varInspector').length>0)
-            $('#varInspector table').tablesorter()}, 50)
-        });
     }
 
     var varRefresh = function() {
@@ -252,6 +239,10 @@ function html_table(jsonVars) {
             };
         }
         var varInspector_wrapper = $('<div id="varInspector-wrapper"/>')
+        .append(
+            $('<div id="varInspector-header"/>')
+            .addClass("header")
+            .text("Polyglot Inspector"))
             .append(
                 $("<div/>").attr("id", "varInspector").addClass('varInspector')
             )
