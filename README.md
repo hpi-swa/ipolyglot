@@ -14,7 +14,7 @@ npm install . -g --python=python2.7 && ijsinstall --spec-path=full
 
 A different language can be used in each notebook cell. Simply specify the desired language as a [magic command](https://ipython.readthedocs.io/en/stable/interactive/magics.html) in the first line of the cell:
 
-```
+```ruby
 %polyglot [language code]
 
 [code]
@@ -22,7 +22,7 @@ A different language can be used in each notebook cell. Simply specify the desir
 
 for example:
 
-```
+```ruby
 %polyglot python
 
 my_dict = dict()
