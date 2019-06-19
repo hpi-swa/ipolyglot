@@ -1,4 +1,5 @@
 # The Polyglot Jupyter Kernel
+<img width="1577" alt="Screenshot 2019-06-19 at 11 28 44" src="https://user-images.githubusercontent.com/9486619/59754072-af3fa400-9285-11e9-97fe-8ba5e03e41d2.png">
 
 The Polyglot Jupyter Kernel is a [kernel for Jupyter notebooks](https://jupyter.readthedocs.io/en/latest/projects/kernels.html) that can handle multiple programming languages. It's running on [GraaLVM](https://www.graalvm.org/).
 
