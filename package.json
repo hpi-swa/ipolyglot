@@ -30,6 +30,7 @@
         "ijsnotebook": "bin/ijsnotebook.js"
     },
     "dependencies": {
+        "esprima": "^4.0.1",
         "jp-kernel": "1",
         "patch-package": "^6.1.2"
     },
