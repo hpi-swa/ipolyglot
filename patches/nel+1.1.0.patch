@@ -14,7 +14,7 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..aa5cdf1 100755
+index 6935d32..adc8450 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..aa5cdf1 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,98 @@ function inspect(object) {
+@@ -313,6 +314,106 @@ function inspect(object) {
      }
  }
  
@@ -67,7 +67,11 @@ index 6935d32..aa5cdf1 100755
 +
 +
 +function loadPolyglotBlacklist(language) {
-+    let polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
++    let polyglotVariableBlacklist = null;
++    try {
++        polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
++    } catch (e) {}
++
 +    if (!polyglotVariableBlacklist) {
 +        polyglotVariableBlacklist = {};
 +    }
@@ -83,7 +87,11 @@ index 6935d32..aa5cdf1 100755
 +
 +
 +function importPolyglotVariables(language) {
-+    let variableList = Polyglot.import('__bindings');
++    let variableList = null;
++    try {
++        variableList = Polyglot.import('__bindings');
++    } catch (e) {}
++
 +    if (!variableList) {
 +        variableList = [];
 +        Polyglot.export('__bindings', variableList)
