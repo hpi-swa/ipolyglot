@@ -1,5 +1,5 @@
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..15fe9a8 100755
+index f2391d6..05874d7 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
 @@ -199,7 +199,9 @@ Session._command = paths.node;
@@ -8,13 +8,13 @@ index f2391d6..15fe9a8 100755
   */
 -Session._args = ["--eval", server]; // --eval workaround
 +// some useful flags for debugging, turn on if need be
-+//Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
++// Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
 +Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
  
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..db0655b 100755
+index 6935d32..aa5cdf1 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..db0655b 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,110 @@ function inspect(object) {
+@@ -313,6 +314,98 @@ function inspect(object) {
      }
  }
  
@@ -67,11 +67,7 @@ index 6935d32..db0655b 100755
 +
 +
 +function loadPolyglotBlacklist(language) {
-+    let polyglotVariableBlacklist = null;
-+    try {
-+        polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
-+    } catch (e) {};
-+
++    let polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
 +    if (!polyglotVariableBlacklist) {
 +        polyglotVariableBlacklist = {};
 +    }
@@ -87,19 +83,11 @@ index 6935d32..db0655b 100755
 +
 +
 +function importPolyglotVariables(language) {
-+    let variableList = null;
-+    try {
-+        variableList = Polyglot.import('__bindings');
-+    } catch (e) {};
-+
-+    console.log('varlist: ', variableList);
-+
++    let variableList = Polyglot.import('__bindings');
 +    if (!variableList) {
 +        variableList = [];
 +        Polyglot.export('__bindings', variableList)
 +    }
-+
-+    console.log('varlist: ', variableList);
 +
 +    for (let i of variableList) {
 +        Polyglot.eval(language, defaultLanguageStatements(i)[language]['importVariable']);
@@ -127,6 +115,14 @@ index 6935d32..db0655b 100755
 +        const rawCodeSplit = rawCode.split('\n');
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
 +        const code = rawCodeSplit.slice(1).join('\n');
++
++        loadPolyglotBlacklist(languageFromMagic);
++        importPolyglotVariables(languageFromMagic);
++        const result = Polyglot.eval(languageFromMagic, code);
++        exportPolyglotVariables(languageFromMagic);
++
++        return result;
 +    }
 +
++    return vm.runInThisContext(rawCode);
  }
