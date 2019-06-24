@@ -118,28 +118,68 @@ define([
 
 
 function html_table(jsonVars) {
-    let tree_map = `<ul id="myUL">
-    <li><span class="caret">Beverages</span>
-      <ul class="nested">
-        <li>Water</li>
-        <li>Coffee</li>
-        <li><span class="caret">Tea</span>
-          <ul class="nested">
-            <li>Black Tea</li>
-            <li>White Tea</li>
-            <li><span class="caret">Green Tea</span>
-              <ul class="nested">
-                <li>Sencha</li>
-                <li>Gyokuro</li>
-                <li>Matcha</li>
-                <li>Pi Lo Chun</li>
-              </ul>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-  </ul>`
+
+    function _trunc(x, L) {
+        x = String(x)
+        if (x.length < L) return x
+        else return x.substring(0, L - 3) + '...'
+    }
+
+    let tree = $(`<ul id="myUL"></ul>`)
+
+    var kernelLanguage = Jupyter.notebook.metadata.kernelspec.language.toLowerCase()
+    var varList = JSON.parse(String(jsonVars))
+
+    varList.forEach(listVar => {
+
+        let listElem = $("<li></li>");
+
+        let caret = $('<span class="caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+            $(this).siblings(".nested").toggleClass("active");
+            $(this).toggleClass("caret-down");
+        })
+
+        listElem.append(caret)
+
+        let mockNested = $(`
+        <ul class="nested">
+            <li>Water</li>
+    
+            </ul>
+        `)
+
+        listElem.append(mockNested)
+
+
+
+        tree.append(listElem)
+    });
+
+    let tree_map = tree;
+
+
+//     let tree_map = `
+//     <li><span class="caret">Beverages</span>
+//       <ul class="nested">
+//         <li>Water</li>
+//         <li>Coffee</li>
+//         <li><span class="caret">Tea</span>
+//           <ul class="nested">
+//             <li>Black Tea</li>
+//             <li>White Tea</li>
+//             <li><span class="caret">Green Tea</span>
+//               <ul class="nested">
+//                 <li>Sencha</li>
+//                 <li>Gyokuro</li>
+//                 <li>Matcha</li>
+//                 <li>Pi Lo Chun</li>
+//               </ul>
+//             </li>
+//           </ul>
+//         </li>
+//       </ul>
+//     </li>
+//   </ul>`
     return tree_map;
     }
 
