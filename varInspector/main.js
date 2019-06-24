@@ -126,33 +126,48 @@ function html_table(jsonVars) {
     }
 
     let tree = $(`<ul id="myUL"></ul>`)
+    let bindingsElem = $("<li></li>")
+    bindingsElem.append($('<span class="caret">Bindings</span>').click(function(){
+        $(this).siblings(".nested").toggleClass("active");
+        $(this).toggleClass("caret-down");
+    }))
+    tree.append(bindingsElem)
 
-    var kernelLanguage = Jupyter.notebook.metadata.kernelspec.language.toLowerCase()
+    let firstLevelVars =  $('<ul class="nested"></ul>')
+
+
     var varList = JSON.parse(String(jsonVars))
 
     varList.forEach(listVar => {
 
         let listElem = $("<li></li>");
+        firstLevelVars.append(listElem);
 
-        let caret = $('<span class="caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
-            $(this).siblings(".nested").toggleClass("active");
-            $(this).toggleClass("caret-down");
-        })
-
-        listElem.append(caret)
-
-        let mockNested = $(`
-        <ul class="nested">
-            <li>Water</li>
+        // stay on first level for simple data types
+        if (listVar.varType !== 'object' && listVar.varType !== 'object') {
+            let caret = $('<span class="caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+                $(this).siblings(".nested").toggleClass("active");
+                $(this).toggleClass("caret-down");
+            })
     
-            </ul>
-        `)
+            listElem.append(caret)
+    
+            // append content of var
+            listElem.append('<p class=varType>' + listVar.varContent + '</p>')
 
-        listElem.append(mockNested)
+        }
+
+        if (listVar.varType == 'array') {
+            
+        }
+    
 
 
 
-        tree.append(listElem)
+
+
+
+        bindingsElem.append(firstLevelVars)
     });
 
     let tree_map = tree;
