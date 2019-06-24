@@ -1,5 +1,5 @@
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..05874d7 100755
+index f2391d6..1e59cde 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
 @@ -199,7 +199,9 @@ Session._command = paths.node;
@@ -8,13 +8,13 @@ index f2391d6..05874d7 100755
   */
 -Session._args = ["--eval", server]; // --eval workaround
 +// some useful flags for debugging, turn on if need be
-+// Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
-+Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
++Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
++//Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
  
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..aa5cdf1 100755
+index 6935d32..b30ef2b 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
 @@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
@@ -25,7 +25,7 @@ index 6935d32..aa5cdf1 100755
  
  // Init IPC server
  init();
-@@ -313,6 +314,98 @@ function inspect(object) {
+@@ -313,6 +314,120 @@ function inspect(object) {
      }
  }
  
@@ -37,23 +37,31 @@ index 6935d32..aa5cdf1 100755
 +    // TODO: replace string repr with actual arrays
 +    return {
 +        'python': {
-+            'importVariable': `import polyglot; ${variableName} = polyglot.import_value("${variableName}")`,
-+            'exportVariable': `import polyglot; polyglot.export_value(${variableName}, "${variableName}")`,
++            'importBindings': `import polyglot; bindings = polyglot.import_value("bindings")`,
++            'exportBindings': `import polyglot; polyglot.export_value(bindings, "bindings")`,
++            'importVariable': `${variableName} = bindings["${variableName}"]`,
++            'exportVariable': `bindings["${variableName}"] = ${variableName}`,
 +            'globalVariables': `repr(list(globals().keys())).replace("'", '"')`,
 +        },
 +        'R': {
-+            'importVariable': `${variableName} <- import("${variableName}")`,
-+            'exportVariable': `export("${variableName}", ${variableName})`,
++            'importBindings': `bindings <- import("bindings")`,
++            'exportBindings': `export("bindings", bindings)`,
++            'importVariable': `${variableName} = bindings[["${variableName}"]]`,
++            'exportVariable': `bindings[["${variableName}"]] = ${variableName}`,
 +            'globalVariables': `paste('["', paste(ls(all.names=TRUE), collapse='", "'), '"]', sep="")`,
 +        },
 +        'ruby': {
-+            'importVariable': `$${variableName} = Polyglot.import("${variableName}")`,
-+            'exportVariable': `Polyglot.export("${variableName}", $${variableName})`,
-+            'globalVariables': 'require "json"; global_variables.map{ |varId| varId[1..-1] }.to_json',
++            'importBindings': `$bindings = Polyglot.import("bindings")`,
++            'exportBindings': `Polyglot.export("bindings", $bindings)`,
++            'importVariable': `${variableName} = $bindings["${variableName}"]`,
++            'exportVariable': `$bindings["${variableName}"] = ${variableName}`,
++            'globalVariables': 'require "json"; global_variables.to_json',
 +        },
 +        'js': {
-+            'importVariable': `${variableName} = Polyglot.import("${variableName}")`,
-+            'exportVariable': `Polyglot.export("${variableName}", ${variableName})`,
++            'importBindings': `bindings = Polyglot.import("bindings")`,
++            'exportBindings': `Polyglot.export("bindings", bindings)`,
++            'importVariable': `${variableName} = bindings["${variableName}"]`,
++            'exportVariable': `bindings["${variableName}"] = ${variableName}`,
 +            'globalVariables': 'JSON.stringify(Object.keys(global))',
 +        },
 +    }
@@ -67,7 +75,11 @@ index 6935d32..aa5cdf1 100755
 +
 +
 +function loadPolyglotBlacklist(language) {
-+    let polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
++    let polyglotVariableBlacklist = null;
++    try {
++        polyglotVariableBlacklist = Polyglot.import('__polyglotVariableBlacklist');
++    } catch (e) {}
++
 +    if (!polyglotVariableBlacklist) {
 +        polyglotVariableBlacklist = {};
 +    }
@@ -83,28 +95,38 @@ index 6935d32..aa5cdf1 100755
 +
 +
 +function importPolyglotVariables(language) {
-+    let variableList = Polyglot.import('__bindings');
++    let variableList = null;
++    try {
++        variableList = Polyglot.import('bindings');
++    } catch (e) {}
++
 +    if (!variableList) {
-+        variableList = [];
-+        Polyglot.export('__bindings', variableList)
++        variableList = {};
++        Polyglot.export('bindings', variableList);
 +    }
 +
-+    for (let i of variableList) {
-+        Polyglot.eval(language, defaultLanguageStatements(i)[language]['importVariable']);
++    Polyglot.eval(language, defaultLanguageStatements()[language]['importBindings']);
++
++    for (let i of Object.keys(variableList)) {
++        try {
++            Polyglot.eval(language, defaultLanguageStatements(i)[language]['importVariable']);
++        } catch (e) {}
 +    }
 +}
 +
 +
 +function exportPolyglotVariables(language) {
 +    let polyglotVariableBlacklist = loadPolyglotBlacklist(language);
++    polyglotVariableBlacklist.push('bindings', '$bindings');
 +
 +    let newPolyglotVariables = loadGlobalVariables(language);
 +    let newPolyglotVariablesWoBlacklisted = newPolyglotVariables.filter(x => !polyglotVariableBlacklist.includes(x));
++
 +    for (let i of newPolyglotVariablesWoBlacklisted) {
 +        Polyglot.eval(language, defaultLanguageStatements(i)[language]['exportVariable']);
 +    }
 +
-+    Polyglot.export('__bindings', newPolyglotVariablesWoBlacklisted);
++    Polyglot.eval(language, defaultLanguageStatements()[language]['exportBindings']);
 +}
 +
 +
