@@ -118,28 +118,29 @@ define([
 
 
 function html_table(jsonVars) {
-    function _trunc(x, L) {
-        x = String(x)
-        if (x.length < L) return x
-        else return x.substring(0, L - 3) + '...'
-    }
-    var kernelLanguage = Jupyter.notebook.metadata.kernelspec.language.toLowerCase()
-    var kernel_config = cfg.kernels_config[kernelLanguage];
-    var varList = JSON.parse(String(jsonVars))
-
-    var beg_table = '<div class=\"inspector\"><table rules="none"   class=\"table fixed table-condensed table-nonfluid \"><col /> \
- <col  /><col /><thead><tr><th >Name</th><th >Type</th><th >Size</th>' + '<th >Value</th></tr></thead><tr><td> \
- </td></tr>';
-    varList.forEach(listVar => {
-        var shape_col_str = '</td><td>';
-        beg_table +=
-            '<tr>' +
-            '<td> <b>' + _trunc(listVar.varName, cfg.cols.lenName) + '</b></td><td>' + _trunc(listVar.varType, cfg.cols.lenType) +
-            '</td><td>' + listVar.varSize + shape_col_str + _trunc(listVar.varContent, cfg.cols.lenVar) +
-            '</td></tr>';
-    });
-    var full_table = beg_table + '</table></div>';
-    return full_table;
+    let tree_map = `<ul id="myUL">
+    <li><span class="caret">Beverages</span>
+      <ul class="nested">
+        <li>Water</li>
+        <li>Coffee</li>
+        <li><span class="caret">Tea</span>
+          <ul class="nested">
+            <li>Black Tea</li>
+            <li>White Tea</li>
+            <li><span class="caret">Green Tea</span>
+              <ul class="nested">
+                <li>Sencha</li>
+                <li>Gyokuro</li>
+                <li>Matcha</li>
+                <li>Pi Lo Chun</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>`
+    return tree_map;
     }
 
 
