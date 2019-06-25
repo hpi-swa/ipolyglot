@@ -172,20 +172,23 @@ function html_table(jsonVars) {
 
     var varList = JSON.parse(String(jsonVars))
 
+    console.log(varList)
+
     varList.forEach(listVar => {
         let listElem = $("<li></li>");
         firstLevelVars.append(listElem);
 
         // stay on first level for simple data types
-        if (listVar.varType !== 'array' && listVar.varType !== 'object') {
+        if (typeof listVar.varContent == "number" || typeof listVar.varContent == "string") {
+            console.log("this is a simple data type", listVar)
             renderSimple(listElem, listVar);
         }
         
-        if (listVar.varType == 'array') {
+        if (typeof listVar.varContent == 'object' && Array.isArray(listVar.varContent)) {
             renderArray(listElem, listVar)
         }
 
-        if (listVar.varType == 'object') {
+        if (typeof listVar.varContent == 'object' && !Array.isArray(listVar.varContent)) {
             renderObject(listElem, listVar);
         }
         bindingsElem.append(firstLevelVars)
