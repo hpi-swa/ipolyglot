@@ -11,7 +11,7 @@ function var_dic_list() {
                 "varName": binding,
                 "varSize": polyglotImport.length ? polyglotImport.length : 'n/a',
                 "varType": typeof polyglotImport == "object" ? (polyglotImport.length ? "array" : "object") : typeof polyglotImport,
-                "varContent": '' + polyglotImport,
+                "varContent": polyglotImport,
                 "objectContent": typeof polyglotImport == "object" ? Object.keys(polyglotImport).map((key) => [key, polyglotImport[key]]) : ""
             })
         }

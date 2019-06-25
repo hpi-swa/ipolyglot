@@ -116,6 +116,9 @@ define([
         document.getElementsByTagName("head")[0].appendChild(link);
     };
 
+function renderArray() {
+
+}
 
 function html_table(jsonVars) {
 
@@ -127,10 +130,12 @@ function html_table(jsonVars) {
 
     let tree = $(`<ul id="myUL"></ul>`)
     let bindingsElem = $("<li></li>")
+
     bindingsElem.append($('<span class="tree_caret">Bindings</span>').click(function(){
         $(this).siblings(".nested").toggleClass("active");
         $(this).toggleClass("tree_caret-down");
     }))
+
     tree.append(bindingsElem)
 
     let firstLevelVars =  $('<ul class="nested"></ul>')
@@ -140,17 +145,17 @@ function html_table(jsonVars) {
 
     varList.forEach(listVar => {
 
+        console.log("THIS IS THE ACTUAL VARIABLE", listVar);
+
         let listElem = $("<li></li>");
         firstLevelVars.append(listElem);
 
         // stay on first level for simple data types
         if (listVar.varType !== 'array' && listVar.varType !== 'object') {
-            
-    
             // append content of var
             listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
-
         }
+        
 
         if (listVar.varType == 'array') {
 
@@ -162,17 +167,14 @@ function html_table(jsonVars) {
             listElem.append(tree_caret)
             let newNesting = $('<ul class="nested"></ul>')
             
-            listVar.varContent.split(",").forEach(arrayVar => {
-                newNesting.append('<li>' + arrayVar + '</li>')
-            }
-            )
+            listVar.varContent.forEach((index, arrayVar) => {
+                newNesting.append('<li>' + index + ': ' + arrayVar + '</li>')
+            })
 
             listElem.append(newNesting)
-
         }
 
         if (listVar.varType == 'object') {
-
             let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
                 $(this).siblings(".nested").toggleClass("active");
                 $(this).toggleClass("tree_caret-down");
@@ -181,49 +183,17 @@ function html_table(jsonVars) {
             listElem.append(tree_caret)
             let newNesting = $('<ul class="nested"></ul>')
             
-            listVar.objectContent.forEach(objectVar => {
-                newNesting.append('<li>' + objectVar[0] + ':  ' + objectVar[1] + '</li>')
-            }
-            )
+            Object.keys(listVar.varContent).forEach(key => {
+                newNesting.append('<li>' + key + ':  ' + listVar.varContent[key] + '</li>')
+            })
 
             listElem.append(newNesting)
-
         }
-    
-
-
-
-
-
-
         bindingsElem.append(firstLevelVars)
     });
 
     let tree_map = tree;
 
-
-//     let tree_map = `
-//     <li><span class="caret">Beverages</span>
-//       <ul class="nested">
-//         <li>Water</li>
-//         <li>Coffee</li>
-//         <li><span class="caret">Tea</span>
-//           <ul class="nested">
-//             <li>Black Tea</li>
-//             <li>White Tea</li>
-//             <li><span class="caret">Green Tea</span>
-//               <ul class="nested">
-//                 <li>Sencha</li>
-//                 <li>Gyokuro</li>
-//                 <li>Matcha</li>
-//                 <li>Pi Lo Chun</li>
-//               </ul>
-//             </li>
-//           </ul>
-//         </li>
-//       </ul>
-//     </li>
-//   </ul>`
     return tree_map;
     }
 
