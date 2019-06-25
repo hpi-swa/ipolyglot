@@ -127,9 +127,9 @@ function html_table(jsonVars) {
 
     let tree = $(`<ul id="myUL"></ul>`)
     let bindingsElem = $("<li></li>")
-    bindingsElem.append($('<span class="caret">Bindings</span>').click(function(){
+    bindingsElem.append($('<span class="tree_caret">Bindings</span>').click(function(){
         $(this).siblings(".nested").toggleClass("active");
-        $(this).toggleClass("caret-down");
+        $(this).toggleClass("tree_caret-down");
     }))
     tree.append(bindingsElem)
 
@@ -144,21 +144,50 @@ function html_table(jsonVars) {
         firstLevelVars.append(listElem);
 
         // stay on first level for simple data types
-        if (listVar.varType !== 'object' && listVar.varType !== 'object') {
-            let caret = $('<span class="caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
-                $(this).siblings(".nested").toggleClass("active");
-                $(this).toggleClass("caret-down");
-            })
-    
-            listElem.append(caret)
+        if (listVar.varType !== 'array' && listVar.varType !== 'object') {
+            
     
             // append content of var
-            listElem.append('<p class=varType>' + listVar.varContent + '</p>')
+            listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
 
         }
 
         if (listVar.varType == 'array') {
+
+            let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+                $(this).siblings(".nested").toggleClass("active");
+                $(this).toggleClass("tree_caret-down");
+            })
+
+            listElem.append(tree_caret)
+            let newNesting = $('<ul class="nested"></ul>')
             
+            listVar.varContent.split(",").forEach(arrayVar => {
+                newNesting.append('<li>' + arrayVar + '</li>')
+            }
+            )
+
+            listElem.append(newNesting)
+
+        }
+
+        if (listVar.varType == 'object') {
+
+            let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+                $(this).siblings(".nested").toggleClass("active");
+                $(this).toggleClass("tree_caret-down");
+            })
+
+            listElem.append(tree_caret)
+            let newNesting = $('<ul class="nested"></ul>')
+            
+            listVar.objectContent.forEach(objectVar => {
+                newNesting.append('<li>' + objectVar[0] + ':  ' + objectVar[1] + '</li>')
+            }
+            )
+
+            listElem.append(newNesting)
+
         }
     
 

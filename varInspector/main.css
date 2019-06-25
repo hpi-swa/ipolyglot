@@ -11,16 +11,21 @@
   overflow-x: auto;
 } 
 
-.varInspector-float-wrapper {
+#varInspector-wrapper {
+  margin-left: 20px;
   position: fixed !important;
-  top: 120px;
+  top: 130px !important;
+  right: 30px !important;
+}
+
+.varInspector-float-wrapper {
   max-width:800px;
-  border: thin solid rgba(0, 0, 0, 0.38);
-  padding:10px;
+  padding: 10px;
   opacity: .95;
   z-index: 100;
   overflow: hidden;
   background: #FFFFFF;
+  box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 
 }
 
@@ -111,24 +116,31 @@ ul, #myUL {
 #myUL {
   margin: 0;
   padding: 0;
+  font-size: 1.5em;
 }
 
-/* Style the caret/arrow */
-.caret {
+#myUL li {
+}
+
+/* Style the tree_caret/arrow */
+.tree_caret {
   cursor: pointer; 
+  font-weight: 600;
   user-select: none; /* Prevent text selection */
 }
 
-/* Create the caret/arrow with a unicode, and style it */
-.caret::before {
+/* Create the tree_caret/arrow with a unicode, and style it */
+.tree_caret::before {
+  color: black;
   content: "\25B6";
-  color: red;
   display: inline-block;
   margin-right: 6px;
 }
 
-/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-.caret-down::before {
+
+
+/* Rotate the tree_caret/arrow icon when clicked on (using JavaScript) */
+.tree_caret-down::before {
   transform: rotate(90deg); 
 }
 
@@ -137,7 +149,7 @@ ul, #myUL {
   display: none;
 }
 
-/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+/* Show the nested list when the user clicks on the tree_caret/arrow (with JavaScript) */
 .active {
   display: block;
 }
