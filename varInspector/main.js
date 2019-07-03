@@ -136,6 +136,7 @@ function renderArray(listElem, listVar) {
 }
 
 function renderSimple(listElem, listVar) {
+    console.log("rendering SIMPLE", listVar)
     listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
 }
 
@@ -149,7 +150,15 @@ function renderObject(listElem, listVar) {
     let newNesting = $('<ul class="nested"></ul>')
     
     Object.keys(listVar.varContent).forEach(key => {
-        newNesting.append('<li>' + key + ':  ' + listVar.varContent[key] + '</li>')
+        let innerListElem = $("<li></li>");
+        if (typeof key == "number" || typeof key == "string") {
+            console.log("KEY", key)
+            renderSimple(innerListElem, {
+                varName: key,
+                varContent: listVar.varContent[key]
+            });
+        }
+        newNesting.append(innerListElem)
     })
 
     listElem.append(newNesting)
