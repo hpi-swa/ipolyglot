@@ -151,9 +151,24 @@ function renderObject(listElem, listVar) {
     
     Object.keys(listVar.varContent).forEach(key => {
         let innerListElem = $("<li></li>");
-        if (typeof key == "number" || typeof key == "string") {
-            console.log("KEY", key)
+        let innerVariable = listVar.varContent[key]
+
+        if (typeof innerVariable == "number" || typeof innerVariable == "string") {
             renderSimple(innerListElem, {
+                varName: key,
+                varContent: innerVariable
+            });
+        }
+
+        if (typeof innerVariable == 'object' && Array.isArray(innerVariable)) {
+            renderArray(innerListElem, {
+                varName: key,
+                varContent: listVar.varContent[key]
+            })
+        }
+
+        if (typeof innerVariable == 'object' && !Array.isArray(innerVariable)) {
+            renderObject(innerListElem, {
                 varName: key,
                 varContent: listVar.varContent[key]
             });
