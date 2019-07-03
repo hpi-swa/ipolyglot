@@ -129,14 +129,37 @@ function renderArray(listElem, listVar) {
     })
     listElem.append(tree_caret)
     let newNesting = $('<ul class="nested"></ul>') 
+
     listVar.varContent.forEach((arrayVar, index) => {
-        newNesting.append('<li>' + index + ': ' + arrayVar + '</li>')
+        let innerListElem = $("<li></li>");
+        let innerVariable = arrayVar
+
+        if (typeof innerVariable == "number" || typeof innerVariable == "string") {
+            renderSimple(innerListElem, {
+                varName: index,
+                varContent: innerVariable
+            });
+        }
+
+        if (typeof innerVariable == 'object' && Array.isArray(innerVariable)) {
+            renderArray(innerListElem, {
+                varName: index,
+                varContent: arrayVar
+            })
+        }
+
+        if (typeof innerVariable == 'object' && !Array.isArray(innerVariable)) {
+            renderObject(innerListElem, {
+                varName: index,
+                varContent: arrayVar
+            });
+        }
+        newNesting.append(innerListElem)
     })
     listElem.append(newNesting)
 }
 
 function renderSimple(listElem, listVar) {
-    console.log("rendering SIMPLE", listVar)
     listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
 }
 
