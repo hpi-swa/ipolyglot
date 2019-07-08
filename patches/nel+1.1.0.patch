@@ -14,18 +14,10 @@ index f2391d6..1e59cde 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..b30ef2b 100755
+index 6935d32..097097c 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
- var log;
- var requester;
- var initialContext;
-+var esprima = require('esprima');
- 
- // Init IPC server
- init();
-@@ -313,6 +314,120 @@ function inspect(object) {
+@@ -313,6 +313,126 @@ function inspect(object) {
      }
  }
  
@@ -46,7 +38,7 @@ index 6935d32..b30ef2b 100755
 +        'R': {
 +            'importBindings': `bindings <- import("bindings")`,
 +            'exportBindings': `export("bindings", bindings)`,
-+            'importVariable': `${variableName} = bindings[["${variableName}"]]`,
++            'importVariable': `${variableName} <- bindings[["${variableName}"]]`,
 +            'exportVariable': `bindings[["${variableName}"]] = ${variableName}`,
 +            'globalVariables': `paste('["', paste(ls(all.names=TRUE), collapse='", "'), '"]', sep="")`,
 +        },
@@ -54,8 +46,8 @@ index 6935d32..b30ef2b 100755
 +            'importBindings': `$bindings = Polyglot.import("bindings")`,
 +            'exportBindings': `Polyglot.export("bindings", $bindings)`,
 +            'importVariable': `${variableName} = $bindings["${variableName}"]`,
-+            'exportVariable': `$bindings["${variableName}"] = ${variableName}`,
-+            'globalVariables': 'require "json"; global_variables.to_json',
++            'exportVariable': `$bindings["${variableName}"] = $${variableName}`,
++            'globalVariables': 'require "json"; global_variables.map{ |varId| varId[1..-1] }.to_json',
 +        },
 +        'js': {
 +            'importBindings': `bindings = Polyglot.import("bindings")`,
@@ -117,7 +109,9 @@ index 6935d32..b30ef2b 100755
 +
 +function exportPolyglotVariables(language) {
 +    let polyglotVariableBlacklist = loadPolyglotBlacklist(language);
-+    polyglotVariableBlacklist.push('bindings', '$bindings');
++    if (!polyglotVariableBlacklist.includes('bindings')) {
++        polyglotVariableBlacklist.push('bindings', '$bindings', 'polyglot');
++    }
 +
 +    let newPolyglotVariables = loadGlobalVariables(language);
 +    let newPolyglotVariablesWoBlacklisted = newPolyglotVariables.filter(x => !polyglotVariableBlacklist.includes(x));
@@ -134,16 +128,20 @@ index 6935d32..b30ef2b 100755
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
-+        const rawCodeSplit = rawCode.split('\n');
-+        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
-+        const code = rawCodeSplit.slice(1).join('\n');
++        try {
++            const rawCodeSplit = rawCode.split('\n');
++            const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
++            const code = rawCodeSplit.slice(1).join('\n');
++            loadPolyglotBlacklist(languageFromMagic);
++            importPolyglotVariables(languageFromMagic);
++            const result = Polyglot.eval(languageFromMagic, code);
++            exportPolyglotVariables(languageFromMagic);
 +
-+        loadPolyglotBlacklist(languageFromMagic);
-+        importPolyglotVariables(languageFromMagic);
-+        const result = Polyglot.eval(languageFromMagic, code);
-+        exportPolyglotVariables(languageFromMagic);
-+
-+        return result;
++            return result;
++        } catch (e) {
++            return null;
++        }
++        
 +    }
 +
 +    return vm.runInThisContext(rawCode);
