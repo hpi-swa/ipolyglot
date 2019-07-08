@@ -207,10 +207,9 @@ function html_table(jsonVars) {
     let tree = $(`<ul id="myUL"></ul>`)
     let bindingsElem = $("<li></li>")
 
-    bindingsElem.append($('<span class="tree_caret">Bindings</span>').click(function(){
-        $(this).siblings(".nested").toggleClass("active");
-        $(this).toggleClass("tree_caret-down");
-    }))
+    let mainSpan = $('<span></span>')
+    bindingsElem.append(mainSpan);
+
 
     tree.append(bindingsElem)
 
@@ -219,7 +218,6 @@ function html_table(jsonVars) {
 
     var varList = JSON.parse(String(jsonVars))
 
-    console.log(varList)
 
     varList.forEach(listVar => {
         let listElem = $("<li></li>");
@@ -243,6 +241,7 @@ function html_table(jsonVars) {
 
     let tree_map = tree;
 
+    mainSpan.siblings(".nested").addClass("active");
     return tree_map;
     }
 
