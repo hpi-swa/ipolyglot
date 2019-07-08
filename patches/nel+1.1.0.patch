@@ -1,31 +1,134 @@
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..1e59cde 100755
+index f2391d6..23f3590 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
-@@ -199,7 +199,9 @@ Session._command = paths.node;
+@@ -43,7 +43,6 @@ module.exports = {
+     Session: Session,
+ };
+ 
+-
+ var spawn = require("child_process").spawn;
+ var util = require("util");
+ 
+@@ -155,36 +154,41 @@ function Session(nelConfig) {
+      * @member {module:nel~Config}
+      * @private
+      */
+-    this._config = {
+-        cwd: nelConfig.cwd,
+-        stdio: global.DEBUG ?
+-            [process.stdin, process.stdout, process.stderr, "ipc"] :
+-            ["ignore", "ignore", "ignore", "ipc"],
+-    };
+-
+-    /**
+-     * Server that runs the code requests for this session
+-     * @member {module:child_process~ChildProcess}
+-     * @private
+-     */
+-    this._server = spawn(Session._command, Session._args, this._config);
+-    this._server.on("message", Session.prototype._onMessage.bind(this));
+-    this._server.on("exit", (function(code, signal) {
+-        log("SESSION: EXIT:", code, signal);
+-        this._status = "dead";
+-    }).bind(this));
++    fs = require('fs');
++    tmp_stdout = fs.createWriteStream('./tmp_stdout.log', {encoding: 'utf8', autoClose: false});
++
++    tmp_stdout.on('open', () => {
++        this._config = {
++            cwd: nelConfig.cwd,
++            stdio: global.DEBUG ?
++                [process.stdin, tmp_stdout, process.stderr, "ipc"] :
++                ["ignore", "ignore", "ignore", "ipc"],
++        };
+ 
+-    /**
+-     * Server status as a string that can take the following values:
+-     *   "starting" (status from the time the server is spawned until the time
+-     *              the server is ready to receive requests);
+-     *   "online"   (status when the server is ready to receive requests);
+-     *   "dead"     (status after receiving a request to kill the server
+-     *              {@link module:nel~Session.kill}).
+-     * @member {string}
+-     * @private
+-     */
+-    this._status = "starting";
++        /**
++         * Server that runs the code requests for this session
++         * @member {module:child_process~ChildProcess}
++         * @private
++         */
++        this._server = spawn(Session._command, Session._args, this._config);
++        this._server.on("message", Session.prototype._onMessage.bind(this));
++        this._server.on("exit", (function(code, signal) {
++            log("SESSION: EXIT:", code, signal);
++            this._status = "dead";
++        }).bind(this));
++
++        /**
++         * Server status as a string that can take the following values:
++         *   "starting" (status from the time the server is spawned until the time
++         *              the server is ready to receive requests);
++         *   "online"   (status when the server is ready to receive requests);
++         *   "dead"     (status after receiving a request to kill the server
++         *              {@link module:nel~Session.kill}).
++         * @member {string}
++         * @private
++         */
++        this._status = "starting";
++    })
+ }
+ 
+ /**
+@@ -199,7 +203,14 @@ Session._command = paths.node;
   * @member {String[]}
   * @private
   */
 -Session._args = ["--eval", server]; // --eval workaround
-+// some useful flags for debugging, turn on if need be
-+Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
-+//Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
++
++Session._args = [
++    "--polyglot", "--jvm",
++    // some useful flags for debugging, turn on if need be
++    "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true",
++    // --eval workaround
++    "--eval", server
++]
  
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..b30ef2b 100755
+index 6935d32..fb43bca 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -44,6 +44,7 @@ var DEBUG = !!process.env.DEBUG;
+@@ -44,6 +44,26 @@ var DEBUG = !!process.env.DEBUG;
  var log;
  var requester;
  var initialContext;
-+var esprima = require('esprima');
++Tail = require('tail').Tail;
++
++shouldReceive = false;
++
++stdout_tail = new Tail('./tmp_stdout.log');
++
++stdout_tail.on('line', function(data) {
++    if(data === '#!x beginning x!#') {
++        shouldReceive = true
++    } else if (data === '#!x end x!#') {
++        shouldReceive = false;
++    } else if(initialContext.console && shouldReceive) {
++        initialContext.console.log(data);
++    }
++});
++stdout_tail.on('error', function(error) {
++    if(initialContext.console) {
++        initialContext.console.error('ERROR: ', error);
++    }
++});
  
  // Init IPC server
  init();
-@@ -313,6 +314,120 @@ function inspect(object) {
+@@ -313,6 +333,128 @@ function inspect(object) {
      }
  }
  
@@ -138,13 +241,40 @@ index 6935d32..b30ef2b 100755
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
 +        const code = rawCodeSplit.slice(1).join('\n');
 +
++        if(languageFromMagic !== 'js') {
++            console.log('#!x beginning x!#');
++        }
++
 +        loadPolyglotBlacklist(languageFromMagic);
 +        importPolyglotVariables(languageFromMagic);
 +        const result = Polyglot.eval(languageFromMagic, code);
 +        exportPolyglotVariables(languageFromMagic);
++
++        if(languageFromMagic !== 'js') {
++            console.log('#!x end x!#');
++        }
 +
 +        return result;
 +    }
 +
 +    return vm.runInThisContext(rawCode);
  }
+diff --git a/node_modules/nel/package-lock.json b/node_modules/nel/package-lock.json
+new file mode 100644
+index 0000000..f6f4cd3
+--- /dev/null
++++ b/node_modules/nel/package-lock.json
+@@ -0,0 +1,13 @@
++{
++  "name": "nel",
++  "version": "1.1.0",
++  "lockfileVersion": 1,
++  "requires": true,
++  "dependencies": {
++    "tail": {
++      "version": "2.0.2",
++      "resolved": "https://registry.npmjs.org/tail/-/tail-2.0.2.tgz",
++      "integrity": "sha512-raFipiKWdGKEzxbvZwnhUGqjvsv0gpa/1A479rL//NOxnNwYZDN4MPk6xJJdUFs8P2Xrff3nbH5fcyYRLU4UHQ=="
++    }
++  }
++}
