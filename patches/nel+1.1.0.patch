@@ -1,5 +1,5 @@
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..1e59cde 100755
+index f2391d6..05874d7 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
 @@ -199,7 +199,9 @@ Session._command = paths.node;
@@ -8,8 +8,8 @@ index f2391d6..1e59cde 100755
   */
 -Session._args = ["--eval", server]; // --eval workaround
 +// some useful flags for debugging, turn on if need be
-+Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
-+//Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
++// Session._args = ["--polyglot", "--jvm", "--inspect", "--inspect.Suspend=false", "--experimental-options", "--inspect.Internal=true", "--eval", server]; // --eval workaround
++Session._args = ["--polyglot", "--jvm", "--eval", server]; // --eval workaround
  
  /**
   * Combination of a piece of code to be run within a session and all the
