@@ -12,10 +12,10 @@
 } 
 
 #varInspector-wrapper {
-  margin-left: 20px;
   position: fixed !important;
   top: 130px !important;
   right: 30px !important;
+  width: 350px !important;
 }
 
 .varInspector-float-wrapper {
@@ -86,7 +86,6 @@ thead{
 
 /* don't waste so much screen space... */
 #varInspector-wrapper .toc-item{
-  padding-left: 222220px;
 }
 
 #varInspector-wrapper .toc-item .toc-item{

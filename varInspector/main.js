@@ -116,25 +116,100 @@ define([
         document.getElementsByTagName("head")[0].appendChild(link);
     };
 
-function renderArray() {
+function _trunc(x, L) {
+     x = String(x)
+    if (x.length < L) return x
+    else return x.substring(0, L - 3) + '...'
+}
 
+function renderArray(listElem, listVar) {
+    let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+        $(this).siblings(".nested").toggleClass("active");
+        $(this).toggleClass("tree_caret-down");
+    })
+    listElem.append(tree_caret)
+    let newNesting = $('<ul class="nested"></ul>') 
+
+    listVar.varContent.forEach((arrayVar, index) => {
+        let innerListElem = $("<li></li>");
+        let innerVariable = arrayVar
+
+        if (typeof innerVariable == "number" || typeof innerVariable == "string") {
+            renderSimple(innerListElem, {
+                varName: index,
+                varContent: innerVariable
+            });
+        }
+
+        if (typeof innerVariable == 'object' && Array.isArray(innerVariable)) {
+            renderArray(innerListElem, {
+                varName: index,
+                varContent: arrayVar
+            })
+        }
+
+        if (typeof innerVariable == 'object' && !Array.isArray(innerVariable)) {
+            renderObject(innerListElem, {
+                varName: index,
+                varContent: arrayVar
+            });
+        }
+        newNesting.append(innerListElem)
+    })
+    listElem.append(newNesting)
+}
+
+function renderSimple(listElem, listVar) {
+    listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
+}
+
+function renderObject(listElem, listVar) {
+    let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
+        $(this).siblings(".nested").toggleClass("active");
+        $(this).toggleClass("tree_caret-down");
+    })
+
+    listElem.append(tree_caret)
+    let newNesting = $('<ul class="nested"></ul>')
+    
+    Object.keys(listVar.varContent).forEach(key => {
+        let innerListElem = $("<li></li>");
+        let innerVariable = listVar.varContent[key]
+
+        if (typeof innerVariable == "number" || typeof innerVariable == "string") {
+            renderSimple(innerListElem, {
+                varName: key,
+                varContent: innerVariable
+            });
+        }
+
+        if (typeof innerVariable == 'object' && Array.isArray(innerVariable)) {
+            renderArray(innerListElem, {
+                varName: key,
+                varContent: listVar.varContent[key]
+            })
+        }
+
+        if (typeof innerVariable == 'object' && !Array.isArray(innerVariable)) {
+            renderObject(innerListElem, {
+                varName: key,
+                varContent: listVar.varContent[key]
+            });
+        }
+        newNesting.append(innerListElem)
+    })
+
+    listElem.append(newNesting)
 }
 
 function html_table(jsonVars) {
 
-    function _trunc(x, L) {
-        x = String(x)
-        if (x.length < L) return x
-        else return x.substring(0, L - 3) + '...'
-    }
-
     let tree = $(`<ul id="myUL"></ul>`)
     let bindingsElem = $("<li></li>")
 
-    bindingsElem.append($('<span class="tree_caret">Bindings</span>').click(function(){
-        $(this).siblings(".nested").toggleClass("active");
-        $(this).toggleClass("tree_caret-down");
-    }))
+    let mainSpan = $('<span></span>')
+    bindingsElem.append(mainSpan);
+
 
     tree.append(bindingsElem)
 
@@ -143,57 +218,30 @@ function html_table(jsonVars) {
 
     var varList = JSON.parse(String(jsonVars))
 
+
     varList.forEach(listVar => {
-
-        console.log("THIS IS THE ACTUAL VARIABLE", listVar);
-
         let listElem = $("<li></li>");
         firstLevelVars.append(listElem);
 
         // stay on first level for simple data types
-        if (listVar.varType !== 'array' && listVar.varType !== 'object') {
-            // append content of var
-            listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
+        if (typeof listVar.varContent == "number" || typeof listVar.varContent == "string") {
+            console.log("this is a simple data type", listVar)
+            renderSimple(listElem, listVar);
         }
         
-
-        if (listVar.varType == 'array') {
-
-            let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
-                $(this).siblings(".nested").toggleClass("active");
-                $(this).toggleClass("tree_caret-down");
-            })
-
-            listElem.append(tree_caret)
-            let newNesting = $('<ul class="nested"></ul>')
-            
-            listVar.varContent.forEach((index, arrayVar) => {
-                newNesting.append('<li>' + index + ': ' + arrayVar + '</li>')
-            })
-
-            listElem.append(newNesting)
+        if (typeof listVar.varContent == 'object' && Array.isArray(listVar.varContent)) {
+            renderArray(listElem, listVar)
         }
 
-        if (listVar.varType == 'object') {
-            let tree_caret = $('<span class="tree_caret">' +  _trunc(listVar.varName, cfg.cols.lenName) +  '</span>').click(function(){
-                $(this).siblings(".nested").toggleClass("active");
-                $(this).toggleClass("tree_caret-down");
-            })
-
-            listElem.append(tree_caret)
-            let newNesting = $('<ul class="nested"></ul>')
-            
-            Object.keys(listVar.varContent).forEach(key => {
-                newNesting.append('<li>' + key + ':  ' + listVar.varContent[key] + '</li>')
-            })
-
-            listElem.append(newNesting)
+        if (typeof listVar.varContent == 'object' && !Array.isArray(listVar.varContent)) {
+            renderObject(listElem, listVar);
         }
         bindingsElem.append(firstLevelVars)
     });
 
     let tree_map = tree;
 
+    mainSpan.siblings(".nested").addClass("active");
     return tree_map;
     }
 
