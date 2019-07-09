@@ -215,8 +215,14 @@ function html_table(jsonVars) {
 
     let firstLevelVars =  $('<ul class="nested"></ul>')
 
+    console.log("VOR DEM JSON")
+
+    console.log(jsonVars)
 
     var varList = JSON.parse(String(jsonVars))
+    
+    console.log("NACH DEM JSON")
+    console.log(varList)
 
 
     varList.forEach(listVar => {
