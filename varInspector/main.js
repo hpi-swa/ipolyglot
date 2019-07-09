@@ -160,7 +160,7 @@ function renderArray(listElem, listVar) {
 }
 
 function renderSimple(listElem, listVar) {
-    listElem.append($('<p class=var>' + listVar.varName + ': ' + listVar.varContent +  '</p>'))
+    listElem.append($('<p class="var"><span class="varKey">' + listVar.varName + '</span>: <span class="varContent">' + listVar.varContent +  '</span></p>'))
 }
 
 function renderObject(listElem, listVar) {

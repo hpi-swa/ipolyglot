@@ -2,21 +2,27 @@ function var_dic_list() {
 
     let exportVars = [];
 
-    let localBindings = Polyglot.import("__bindings");
+    try {
+        let localBindings = Polyglot.import("bindings");
+        debugger;
 
-    localBindings.forEach((binding) => {
-        if (binding !== "polyglot") {
-            let polyglotImport = Polyglot.import(binding);
-            exportVars.push({
-                "varName": binding,
-                "varSize": polyglotImport.length ? polyglotImport.length : 'n/a',
-                "varType": typeof polyglotImport == "object" ? (polyglotImport.length ? "array" : "object") : typeof polyglotImport,
-                "varContent": polyglotImport,
-                "objectContent": typeof polyglotImport == "object" ? Object.keys(polyglotImport).map((key) => [key, polyglotImport[key]]) : ""
-            })
+        console.log("localBindings", localBindings)
+
+        for (var variable in localBindings){
+            if (variable !== "polyglot") {
+                exportVars.push({
+                    "varName": variable,
+                    "varSize": localBindings[variable].length ? localBindings[variable].length : 'n/a',
+                    "varType": typeof localBindings[variable] == "object" ? (localBindings[variable].length ? "array" : "object") : typeof localBindings[variable],
+                    "varContent": localBindings[variable],
+                    "objectContent": typeof localBindings[variable] == "object" ? Object.keys(localBindings[variable]).map((key) => [key, localBindings[variable][key]]) : ""
+                })
+            }
         }
-    })
-        
+    } catch(error) {
+        // pass
+    }
+    
     return JSON.stringify(exportVars);
 }
 

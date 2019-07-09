@@ -133,7 +133,7 @@ ul, #myUL {
   color: black;
   content: "\25B6";
   display: inline-block;
-  margin-right: 6px;
+  font-size: 0.6em;
 }
 
 
@@ -151,4 +151,13 @@ ul, #myUL {
 /* Show the nested list when the user clicks on the tree_caret/arrow (with JavaScript) */
 .active {
   display: block;
+  padding-inline-start: 20px;
+}
+
+.varKey {
+  color: purple !important;
+}
+
+.varContent {
+  color: blue;
 }
