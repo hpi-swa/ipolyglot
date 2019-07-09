@@ -2,12 +2,9 @@ function var_dic_list() {
 
     let exportVars = [];
 
-    try {
         let localBindings = Polyglot.import("bindings");
 
-        console.log("localBindings", localBindings)
-
-        for (var variable in localBindings){
+        Object.keys(localBindings).forEach((variable) => {
             if (variable !== "polyglot") {
                 exportVars.push({
                     "varName": variable,
@@ -17,10 +14,8 @@ function var_dic_list() {
                     "objectContent": typeof localBindings[variable] == "object" ? Object.keys(localBindings[variable]).map((key) => [key, localBindings[variable][key]]) : ""
                 })
             }
-        }
-    } catch(error) {
-        // pass
-    }
+        })
+
     
     return JSON.stringify(exportVars);
 }
