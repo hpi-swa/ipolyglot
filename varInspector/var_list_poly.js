@@ -4,7 +4,6 @@ function var_dic_list() {
 
     try {
         let localBindings = Polyglot.import("bindings");
-        debugger;
 
         console.log("localBindings", localBindings)
 
