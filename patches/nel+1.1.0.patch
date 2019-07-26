@@ -1,5 +1,5 @@
 diff --git a/node_modules/nel/lib/nel.js b/node_modules/nel/lib/nel.js
-index f2391d6..23f3590 100755
+index f2391d6..99b825b 100755
 --- a/node_modules/nel/lib/nel.js
 +++ b/node_modules/nel/lib/nel.js
 @@ -43,7 +43,6 @@ module.exports = {
@@ -10,78 +10,7 @@ index f2391d6..23f3590 100755
  var spawn = require("child_process").spawn;
  var util = require("util");
  
-@@ -155,36 +154,41 @@ function Session(nelConfig) {
-      * @member {module:nel~Config}
-      * @private
-      */
--    this._config = {
--        cwd: nelConfig.cwd,
--        stdio: global.DEBUG ?
--            [process.stdin, process.stdout, process.stderr, "ipc"] :
--            ["ignore", "ignore", "ignore", "ipc"],
--    };
--
--    /**
--     * Server that runs the code requests for this session
--     * @member {module:child_process~ChildProcess}
--     * @private
--     */
--    this._server = spawn(Session._command, Session._args, this._config);
--    this._server.on("message", Session.prototype._onMessage.bind(this));
--    this._server.on("exit", (function(code, signal) {
--        log("SESSION: EXIT:", code, signal);
--        this._status = "dead";
--    }).bind(this));
-+    fs = require('fs');
-+    tmp_stdout = fs.createWriteStream('./tmp_stdout.log', {encoding: 'utf8', autoClose: false});
-+
-+    tmp_stdout.on('open', () => {
-+        this._config = {
-+            cwd: nelConfig.cwd,
-+            stdio: global.DEBUG ?
-+                [process.stdin, tmp_stdout, process.stderr, "ipc"] :
-+                ["ignore", "ignore", "ignore", "ipc"],
-+        };
- 
--    /**
--     * Server status as a string that can take the following values:
--     *   "starting" (status from the time the server is spawned until the time
--     *              the server is ready to receive requests);
--     *   "online"   (status when the server is ready to receive requests);
--     *   "dead"     (status after receiving a request to kill the server
--     *              {@link module:nel~Session.kill}).
--     * @member {string}
--     * @private
--     */
--    this._status = "starting";
-+        /**
-+         * Server that runs the code requests for this session
-+         * @member {module:child_process~ChildProcess}
-+         * @private
-+         */
-+        this._server = spawn(Session._command, Session._args, this._config);
-+        this._server.on("message", Session.prototype._onMessage.bind(this));
-+        this._server.on("exit", (function(code, signal) {
-+            log("SESSION: EXIT:", code, signal);
-+            this._status = "dead";
-+        }).bind(this));
-+
-+        /**
-+         * Server status as a string that can take the following values:
-+         *   "starting" (status from the time the server is spawned until the time
-+         *              the server is ready to receive requests);
-+         *   "online"   (status when the server is ready to receive requests);
-+         *   "dead"     (status after receiving a request to kill the server
-+         *              {@link module:nel~Session.kill}).
-+         * @member {string}
-+         * @private
-+         */
-+        this._status = "starting";
-+    })
- }
- 
- /**
-@@ -199,7 +203,14 @@ Session._command = paths.node;
+@@ -199,7 +198,14 @@ Session._command = paths.node;
   * @member {String[]}
   * @private
   */
@@ -98,37 +27,20 @@ index f2391d6..23f3590 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..fb43bca 100755
+index 6935d32..16006b5 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -44,6 +44,26 @@ var DEBUG = !!process.env.DEBUG;
- var log;
+@@ -45,6 +45,9 @@ var log;
  var requester;
  var initialContext;
-+Tail = require('tail').Tail;
-+
-+shouldReceive = false;
-+
-+stdout_tail = new Tail('./tmp_stdout.log');
-+
-+stdout_tail.on('line', function(data) {
-+    if(data === '#!x beginning x!#') {
-+        shouldReceive = true
-+    } else if (data === '#!x end x!#') {
-+        shouldReceive = false;
-+    } else if(initialContext.console && shouldReceive) {
-+        initialContext.console.log(data);
-+    }
-+});
-+stdout_tail.on('error', function(error) {
-+    if(initialContext.console) {
-+        initialContext.console.error('ERROR: ', error);
-+    }
-+});
  
++const PolyglotContext = Java.type('org.graalvm.polyglot.Context');
++const ByteArrayOutputStream = Java.type('java.io.ByteArrayOutputStream');
++
  // Init IPC server
  init();
-@@ -313,6 +333,128 @@ function inspect(object) {
+ 
+@@ -313,6 +316,148 @@ function inspect(object) {
      }
  }
  
@@ -237,22 +149,42 @@ index 6935d32..fb43bca 100755
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
++        let polyglotStdout = new ByteArrayOutputStream();
++        let polyglotContext = PolyglotContext.newBuilder()
++            .out(polyglotStdout)
++            .allowAllAccess(true)
++            .build();
++
 +        const rawCodeSplit = rawCode.split('\n');
 +        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
 +        const code = rawCodeSplit.slice(1).join('\n');
 +
-+        if(languageFromMagic !== 'js') {
-+            console.log('#!x beginning x!#');
-+        }
-+
 +        loadPolyglotBlacklist(languageFromMagic);
 +        importPolyglotVariables(languageFromMagic);
-+        const result = Polyglot.eval(languageFromMagic, code);
-+        exportPolyglotVariables(languageFromMagic);
 +
-+        if(languageFromMagic !== 'js') {
-+            console.log('#!x end x!#');
++        let result, codeCellStdout, codeCellStderr;
++        try {
++            result = polyglotContext.eval(languageFromMagic, code);
++        } catch(e) {
++            codeCellStderr = e.getMessage();
++        } finally {
++            codeCellStdout = polyglotStdout.toString();
++            if (codeCellStdout.endsWith('\n')) {
++                codeCellStdout = codeCellStdout.slice(0, codeCellStdout.length - 1);
++            }
++            if (codeCellStdout !== undefined && codeCellStdout != '') {
++                initialContext.console.log(codeCellStdout);
++            }
++
++            if (codeCellStderr !== undefined) {
++                initialContext.console.error(codeCellStderr);
++            }
 +        }
++
++        polyglotStdout.close();
++        polyglotContext.close();
++
++        exportPolyglotVariables(languageFromMagic);
 +
 +        return result;
 +    }
