@@ -216,6 +216,7 @@ function html_table(jsonVars) {
     let firstLevelVars =  $('<ul class="nested"></ul>')
 
     console.log("VOR DEM JSON")
+    console.log(typeof jsonVars)
 
     console.log(jsonVars)
 
