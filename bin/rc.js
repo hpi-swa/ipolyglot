@@ -11,7 +11,7 @@
  * this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
+ * this list of conditions and the following disclaimer   in the documentation
  * and/or other materials provided with the distribution.
  *
  * 3. Neither the name of the copyright holder nor the names of its contributors
@@ -526,7 +526,7 @@ function installKernelAsync(context, callback) {
     var specFile = path.join(specDir, "kernel.json");
     var spec = {
         argv: context.args.kernel,
-        display_name: "Polyglot (GraalJS)",
+        display_name: "Polyglot (GraalNode.js)",
         language: "polyglot",
     };
     fs.writeFileSync(specFile, JSON.stringify(spec));
