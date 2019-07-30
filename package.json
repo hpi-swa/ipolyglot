@@ -19,8 +19,8 @@
         "url": "https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git"
     },
     "bin": {
-        "ijsinstall": "bin/ijsinstall.js",
-        "ijskernel": "lib/kernel.js"
+        "ipolyglotinstall": "bin/ipolyglotinstall.js",
+        "ipolyglotkernel": "lib/kernel.js"
     },
     "dependencies": {
         "jp-kernel": "1",
@@ -34,6 +34,6 @@
     },
     "scripts": {
         "lint": "eslint bin lib test",
-        "postinstall": "patch-package && ./bin/ijsinstall.js --spec-path=full"
+        "postinstall": "patch-package && ./bin/ipolyglotinstall.js --spec-path=full"
     }
 }

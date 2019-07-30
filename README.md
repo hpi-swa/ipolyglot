@@ -5,11 +5,23 @@ The Polyglot Jupyter Kernel is a [kernel for Jupyter notebooks](https://jupyter.
 
 ### Installing
 
-Install the dependencies (make sure to use python 2.7 during `npm i`) and then install the kernel.
+Make sure to have GraalVM (tested with version 19.)
+
+To install the kernel follow these steps:
 
 ```
-npm install . -g --python=python2.7 && ijsinstall --spec-path=full
+# To install IPolyglot on Ubuntu, run:
+sudo apt-get install nodejs-legacy npm ipython ipython-notebook  # you might skip this step if you already use jupyter notebooks
+git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
+cd ./pp19-3-jupyter-kernel && npm install . -g
+
+# On MacOs, run:
+brew install pkg-config node zeromq
+pip install --upgrade pyzmq jupyter
+git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
+cd ./pp19-3-jupyter-kernel && npm install . -g --python=python2.7
 ```
+
 
 ### Using different programming languages
 
@@ -33,8 +45,13 @@ my_dict = dict()
 
 The Polyglot Jupyter Kernel shares all available global variables across all notebook cells. It provides an inspector extension to the Jupyter notebook frontend that lists all polyglot variables available.
 
-To install the extension, the directory containing the extension's code has to be moved to your local Jupyter installation, like so:
+To install the extension, move the exention's code found in `varInspector` to your local installation of the `jupyter_contrib_nbextensions` package and install it, like so:
 
 ```
-cd pp19-3-jupyter-kernel && cp -r /anaconda3/lib/python3.7/site-packages/jupyter_contrib_nbextensions/nbextensions/varInspector .
+cd ./pp19-3-jupyter-kernel  # make sure to run all commands from the repository's root
+git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git
+pip install -e ./jupyter_contrib_nbextensions
+cp -r ./varInspector ./jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions/
+jupyter contrib nbextensions install --user
+jupyter nbextension enable varInspector/main
 ```
