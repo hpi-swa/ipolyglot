@@ -5,13 +5,13 @@ The Polyglot Jupyter Kernel is a [kernel for Jupyter notebooks](https://jupyter.
 
 ### Installing
 
-Make sure to have GraalVM (tested with version 19.)
+Make sure to [install](https://www.graalvm.org/downloads) GraalVM (tested with version 19.0.2) and ensure GraalVM's `node` and `npm` are in your `PATH`.
 
 To install the kernel follow these steps:
 
-```
+```sh
 # To install IPolyglot on Ubuntu, run:
-sudo apt-get install nodejs-legacy npm ipython ipython-notebook  # you might skip this step if you already use jupyter notebooks
+sudo apt-get install ipython ipython-notebook  # you can skip this step if you already use jupyter notebooks
 git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
 cd ./pp19-3-jupyter-kernel && npm install . -g
 
@@ -35,11 +35,13 @@ A different language can be used in each notebook cell. Simply specify the desir
 
 for example:
 
-```ruby
+```python
 %polyglot python
 
 my_dict = dict()
 ```
+
+Please be aware that you can use languages that have been [installed to your GraalVM](https://www.graalvm.org/docs/reference-manual/graal-updater/) only.
 
 ### Inspecting Polyglot variables
 
@@ -47,8 +49,8 @@ The Polyglot Jupyter Kernel shares all available global variables across all not
 
 To install the extension, move the exention's code found in `varInspector` to your local installation of the `jupyter_contrib_nbextensions` package and install it, like so:
 
-```
-cd ./pp19-3-jupyter-kernel  # make sure to run all commands from the repository's root
+```sh
+cd ./pp19-3-jupyter-kernel  # make sure to run all commands from the ipolyglot repository's root
 git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git
 pip install -e ./jupyter_contrib_nbextensions
 cp -r ./varInspector ./jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions/
