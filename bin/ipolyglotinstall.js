@@ -52,11 +52,11 @@ parseCommandArgs(context, {
     installer: true,
 
     usageHeader: [
-        "IJavascript Kernel Installer",
+        "IPolyglot Kernel Installer",
         "",
         "Usage:",
         "",
-        "    ijsinstall <options>",
+        "    ipolyglotinstall <options>",
     ].join("\n"),
 });
 

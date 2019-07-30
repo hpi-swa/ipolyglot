@@ -48,7 +48,7 @@ var DEBUG;
 var log;
 var dontLog = function dontLog() {};
 var doLog = function doLog() {
-    process.stderr.write("IJS: ");
+    process.stderr.write("IPOLY: ");
     console.error.apply(this, arguments);
 };
 
@@ -56,7 +56,7 @@ if (process.env.DEBUG) {
     DEBUG = true;
 
     try {
-        doLog = require("debug")("IJS:");
+        doLog = require("debug")("IPOLY:");
     } catch (err) {}
 }
 
@@ -131,23 +131,23 @@ function getPackageVersion(packageName) {
 var FLAGS = [{
     excludeIfInstaller: true,
     flag: "help",
-    description: "show IJavascript and Jupyter/IPython help",
+    description: "show IPolyglot and Jupyter/IPython help",
     parse: function(context, arg) {
         context.args.frontend.push(arg);
     },
     showUsage: true,
 }, {
     flag: "version",
-    description: "show IJavascript version",
+    description: "show IPolyglot version",
     parse: function(context, arg) {
         console.log(context.packageJSON.version);
     },
     exit: true,
 }, {
     flag: "versions",
-    description: "show IJavascript and library versions",
+    description: "show IPolyglot and library versions",
     parse: function(context, arg) {
-        console.log("ijavascript", context.packageJSON.version);
+        console.log("ipolyglot", context.packageJSON.version);
         console.log("jmp", getPackageVersion("jmp"));
         console.log("jp-kernel", getPackageVersion("jp-kernel"));
         console.log("nel", getPackageVersion("nel"));
@@ -167,7 +167,7 @@ var FLAGS = [{
     },
 }, {
     prefixedFlag: "help",
-    description: "show IJavascript help",
+    description: "show IPolyglot help",
     parse: function(context, arg) {
     },
     showUsage: true,
@@ -188,7 +188,7 @@ var FLAGS = [{
     },
 }, {
     prefixedFlag: "install=[local|global]",
-    description: "install IJavascript kernel",
+    description: "install IPolyglot kernel",
     parse: function(context, arg) {
         context.flag.install = getValue(arg);
         if (context.flag.install !== "local" &&
@@ -322,7 +322,7 @@ function parseCommandArgs(context, options) {
         ].concat(context.args.kernel);
     } else {
         context.args.kernel = [
-            (process.platform === "win32") ? "ijskernel.cmd" : "ijskernel",
+            (process.platform === "win32") ? "ipolyglotkernel.cmd" : "ipolyglotkernel",
         ].concat(context.args.kernel);
     }
 
@@ -493,7 +493,7 @@ function setProtocol(context) {
             context.args.kernel.join("', '")
         ));
     } else if (context.args.frontend[1] === "console") {
-        context.args.frontend.push("--kernel=javascript");
+        context.args.frontend.push("--kernel=polyglot");
     }
 
     if (context.frontend.majorVersion < 3 &&
