@@ -26,18 +26,6 @@ define([
             'lenVar': 40
         },
         'kernels_config' : {
-            'python': {
-                library: 'var_list.py',
-                delete_cmd_prefix: 'del ',
-                delete_cmd_postfix: '',
-                varRefreshCmd: 'print(var_dic_list())'
-            },
-            'r': {
-                library: 'var_list.r',
-                delete_cmd_prefix: 'rm(',
-                delete_cmd_postfix: ') ',
-                varRefreshCmd: 'cat(var_dic_list()) '
-            },
             'polyglot': {
                 library: 'var_list_poly.js',
                 delete_cmd_prefix: 'delete ',
@@ -215,15 +203,7 @@ function html_table(jsonVars) {
 
     let firstLevelVars =  $('<ul class="nested"></ul>')
 
-    console.log("VOR DEM JSON")
-
-    console.log(jsonVars)
-
     var varList = JSON.parse(String(jsonVars))
-    
-    console.log("NACH DEM JSON")
-    console.log(varList)
-
 
     varList.forEach(listVar => {
         let listElem = $("<li></li>");
@@ -252,7 +232,6 @@ function html_table(jsonVars) {
     }
 
 
-
     function code_exec_callback(msg) {
         var jsonVars = msg.content['text'];
         var notWellDefined = false;
@@ -275,7 +254,6 @@ function html_table(jsonVars) {
                 );
             });
     }
-
 
     var varInspector_init = function() {
         // Define code_init
