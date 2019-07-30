@@ -1,6 +1,6 @@
 {
     "name": "ipolyglot",
-    "version": "0.0.4",
+    "version": "0.0.2",
     "description": "IPolyglot is a polyglot kernel for the Jupyter notebook",
     "keywords": [
         "polyglot",
@@ -9,7 +9,7 @@
         "ipython",
         "jupyter"
     ],
-    "homepage": "https://n-riesco.github.io/ijavascript",
+    "homepage": "https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel",
     "bugs": {
         "url": "https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel/issues"
     },
@@ -24,7 +24,8 @@
     },
     "dependencies": {
         "jp-kernel": "1",
-        "patch-package": "^6.1.2"
+        "patch-package": "^6.1.2",
+        "smart-circular": "^1.0.2"
     },
     "devDependencies": {
         "debug": "2",
