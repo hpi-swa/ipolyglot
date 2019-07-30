@@ -1,13 +1,11 @@
 var sc = require('smart-circular');
 
-
 function var_dic_list() {
 
     let exportVars = [];
 
         let localBindings = Polyglot.import("bindings");
 
-        // TODO: correctly stringify complex data types
         Object.keys(localBindings).forEach((variable) => {
             try {
                 let varValue = typeof localBindings[variable] == "object" && !Array.isArray(localBindings[variable]) ? sc(localBindings[variable]) : localBindings[variable];
