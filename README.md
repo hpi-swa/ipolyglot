@@ -22,6 +22,7 @@ git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git
 cd ./pp19-3-jupyter-kernel && npm install . -g --python=python2.7
 ```
 
+Proceed by (re-)starting a jupyter notebook server (`jupyter notebook`) and creating a new GraalNode.js notebook.
 
 ### Using different programming languages
 
@@ -57,3 +58,9 @@ cp -r ./varInspector ./jupyter_contrib_nbextensions/src/jupyter_contrib_nbextens
 jupyter contrib nbextensions install --user
 jupyter nbextension enable varInspector/main
 ```
+
+Restart your notebook and toggle the variable inspector with the <kbd>🎯</kbd> button in top toolbar.
+
+### Acknowledgments
+
+This projects builds on the tremendous work of [Nicolas Riesco](https://github.com/n-riesco)'s [IJavascript](https://github.com/n-riesco/ijavascript), a Javascript kernel for Jupyter notebooks.
