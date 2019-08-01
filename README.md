@@ -34,7 +34,23 @@ git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git
 cd ./pp19-3-jupyter-kernel && npm install . --python=python2.7
 ```
 
-Proceed by (re-)starting a jupyter notebook server (`jupyter notebook`) and creating a new GraalNode.js notebook.
+Proceed by starting a jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
+
+### Running with Docker
+
+You may also choose to run IPolyglot with docker:
+
+```sh
+# 0. download and setup docker
+# 1. clone ipolyglot repository
+git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
+# 2. build an ipolyglot docker image
+docker build --tag=ipolyglot .
+# 3. run it! (you may choose a different port by changing 8888:<desired port>)
+docker run -p 8888:8888 ipolyglot
+```
+
+Proceed by opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
 
 ### Using different programming languages
 
