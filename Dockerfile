@@ -9,7 +9,7 @@ RUN pip3 install jupyter_core==4.4 jupyter
 
 WORKDIR /code
 COPY . .
-RUN git clean -fd
+RUN git clean -ffxd
 RUN npm install . --unsafe-perm --nodedir="/opt/graalvm-ce-19.0.2/jre/languages/js" --build-from-source
 RUN git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git
 RUN cd jupyter_contrib_nbextensions && git checkout tags/0.5.1
