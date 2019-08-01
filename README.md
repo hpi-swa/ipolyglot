@@ -8,7 +8,7 @@ The Polyglot Jupyter Kernel is a [kernel for Jupyter notebooks](https://jupyter.
 
 Make sure to [install](https://www.graalvm.org/downloads) GraalVM (latest tested version is v19.0.2) and ensure GraalVM's `node` and `npm` are in your `PATH`.
 
-To install the kernel on linux follow these steps:
+To install the kernel on Linux follow these steps:
 ```sh
 # 0. download and setup GraalVM
 # 1. install python and pip:
@@ -36,7 +36,7 @@ cd ./pp19-3-jupyter-kernel && npm install . --python=python2.7
 
 Proceed by starting a jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
 
-### Running with Docker
+### Running IPolyglot with Docker
 
 You may also choose to run IPolyglot with docker:
 
@@ -46,7 +46,7 @@ You may also choose to run IPolyglot with docker:
 git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
 # 2. build an ipolyglot docker image
 docker build --tag=ipolyglot .
-# 3. run it! (you may choose a different port by changing 8888:<desired port>)
+# 3. run it! (choose a different port by changing 8888:<desired port>)
 docker run -p 8888:8888 ipolyglot
 ```
 

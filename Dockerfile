@@ -12,9 +12,8 @@ COPY . .
 RUN git clean -ffxd
 RUN npm install . --unsafe-perm --nodedir="/opt/graalvm-ce-19.0.2/jre/languages/js" --build-from-source
 RUN git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git
-RUN cd jupyter_contrib_nbextensions && git checkout tags/0.5.1
-RUN pip3 install -e .
-RUN cp -r ../varInspector src/jupyter_contrib_nbextensions/nbextensions/
+RUN pip3 install -e jupyter_contrib_nbextensions
+RUN cp -r varInspector jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions/
 RUN jupyter contrib nbextensions install --user
 RUN jupyter nbextension enable varInspector/main
 
