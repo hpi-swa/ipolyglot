@@ -6,21 +6,32 @@ The Polyglot Jupyter Kernel is a [kernel for Jupyter notebooks](https://jupyter.
 
 ### Installing
 
-Make sure to [install](https://www.graalvm.org/downloads) GraalVM (tested with version 19.0.2) and ensure GraalVM's `node` and `npm` are in your `PATH`.
+Make sure to [install](https://www.graalvm.org/downloads) GraalVM (latest tested version is v19.0.2) and ensure GraalVM's `node` and `npm` are in your `PATH`.
 
-To install the kernel follow these steps:
-
+To install the kernel on linux follow these steps:
 ```sh
-# To install IPolyglot on Ubuntu, run:
-sudo apt-get install ipython ipython-notebook  # you can skip this step if you already use jupyter notebooks
+# 0. download and setup GraalVM
+# 1. install python and pip:
+yum install -y python36 python36-devel python36-pip
+# 2. install the jupyter pip package:
+pip3 install jupyter_core==4.4 jupyter
+# 3. install ipolyglot from source:
 git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
-cd ./pp19-3-jupyter-kernel && npm install . -g
+cd ./pp19-3-jupyter-kernel && npm install .
+```
 
-# On MacOs, run:
-brew install pkg-config node zeromq
-pip install --upgrade pyzmq jupyter
+On MacOs, run:
+```sh
+# 0. download and setup GraalVM
+# 1. install python and pip:
+brew install python3
+# 2. install additional dependencies
+brew install pkg-config zeromq
+# 3. install the jupyter pip package and its requirements
+pip install jupyter_core==4.4 pyzmq jupyter
+# 3. install ipolyglot from source:
 git clone https://github.com/hpi-swa-lab/pp19-3-jupyter-kernel.git 
-cd ./pp19-3-jupyter-kernel && npm install . -g --python=python2.7
+cd ./pp19-3-jupyter-kernel && npm install . --python=python2.7
 ```
 
 Proceed by (re-)starting a jupyter notebook server (`jupyter notebook`) and creating a new GraalNode.js notebook.
