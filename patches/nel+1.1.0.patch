@@ -14,10 +14,10 @@ index f2391d6..05874d7 100755
  /**
   * Combination of a piece of code to be run within a session and all the
 diff --git a/node_modules/nel/lib/server/main.js b/node_modules/nel/lib/server/main.js
-index 6935d32..097097c 100755
+index 6935d32..a55e811 100755
 --- a/node_modules/nel/lib/server/main.js
 +++ b/node_modules/nel/lib/server/main.js
-@@ -313,6 +313,126 @@ function inspect(object) {
+@@ -313,6 +313,121 @@ function inspect(object) {
      }
  }
  
@@ -128,20 +128,15 @@ index 6935d32..097097c 100755
 +    const POLYGLOT_MAGIC_PATTERN = '%polyglot ';
 +
 +    if(rawCode.startsWith(POLYGLOT_MAGIC_PATTERN)) {
-+        try {
-+            const rawCodeSplit = rawCode.split('\n');
-+            const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
-+            const code = rawCodeSplit.slice(1).join('\n');
-+            loadPolyglotBlacklist(languageFromMagic);
-+            importPolyglotVariables(languageFromMagic);
-+            const result = Polyglot.eval(languageFromMagic, code);
-+            exportPolyglotVariables(languageFromMagic);
++        const rawCodeSplit = rawCode.split('\n');
++        const languageFromMagic = rawCodeSplit[0].replace(POLYGLOT_MAGIC_PATTERN, '');
++        const code = rawCodeSplit.slice(1).join('\n');
++        loadPolyglotBlacklist(languageFromMagic);
++        importPolyglotVariables(languageFromMagic);
++        const result = Polyglot.eval(languageFromMagic, code);
++        exportPolyglotVariables(languageFromMagic);
 +
-+            return result;
-+        } catch (e) {
-+            return null;
-+        }
-+        
++        return result;
 +    }
 +
 +    return vm.runInThisContext(rawCode);
