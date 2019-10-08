@@ -3,8 +3,23 @@ A polyglot [Jupyter kernel](https://jupyter.readthedocs.io/en/latest/projects/ke
 
 <img width="1519" alt="Screenshot" src="https://user-images.githubusercontent.com/9486619/62134314-8d076000-b2e0-11e9-950e-b773f41ac085.png">
 
+## Running IPolyglot on Docker
 
-## Installing
+If you'd like to run IPolyglot on [Docker](https://www.docker.com/), this should get you started:
+
+```sh
+# 1. Clone IPolyglot's repository
+git clone https://github.com/hpi-swa/ipolyglot.git
+cd ipolyglot
+# 2. Build an IPolyglot docker image
+docker build --tag=ipolyglot .
+# 3. Run it! (choose a different port by changing 8888:<desired port>)
+docker run -p 8888:8888 ipolyglot
+```
+
+Proceed by opening a web-browser on `localhost:8888`, and creating a new notebook.
+
+## Running IPolyglot from source
 
 Make sure to [install](https://www.graalvm.org/downloads) GraalVM (latest tested version is v19.0.2) and ensure GraalVM's `node` and `npm` are in your `PATH`:
 
@@ -39,24 +54,8 @@ git clone https://github.com/hpi-swa/ipolyglot.git
 cd ./ipolyglot && npm install . --python=python2.7
 ```
 
-Proceed by starting a Jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
+Proceed by starting a Jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new notebook.
 
-## Running IPolyglot with Docker
-
-You may also choose to run IPolyglot with docker:
-
-```sh
-# 0. download and setup docker
-# 1. clone ipolyglot repository
-git clone https://github.com/hpi-swa/ipolyglot.git
-cd ipolyglot
-# 2. build an ipolyglot docker image
-docker build --tag=ipolyglot .
-# 3. run it! (choose a different port by changing 8888:<desired port>)
-docker run -p 8888:8888 ipolyglot
-```
-
-Proceed by opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
 
 ## Using different programming languages
 
@@ -103,7 +102,7 @@ This describes how to debug the IPolyglot Kernel, _not_ how to debug code execut
 
 The `jupyter notebook` command can be invoked like this `DEBUG=true jupyter-notebook --debug` to get debugging information about the messages sent between the kernel and the Jupyter notebook.
 
-However, it has often been more helpful to pass debug flags to the GraalNode.js process which actually evaluates the code of Jupyter Notebook cells. This is done in node_modules/nel/lib/nel.js where `Session._args` is defined. There is a commented out line which already includes the necessary flags and can be commented in if need be. Then, a `debugger;` statement can be set anywhere in the NEL code and the Node.js session can be found in [chrome://inspect/#devices](chrome://inspect/#devices) for debugging.
+However, it has often been more helpful to pass debug flags to GraalVM's Node.js process which actually evaluates the code of Jupyter Notebook cells. This is done in node_modules/nel/lib/nel.js where `Session._args` is defined. There is a commented out line which already includes the necessary flags and can be commented in if need be. Then, a `debugger;` statement can be set anywhere in the NEL code and the Node.js session can be found in [chrome://inspect/#devices](chrome://inspect/#devices) for debugging.
 
 ## Current Limitations
 
