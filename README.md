@@ -22,10 +22,10 @@ yum install -y python36 python36-devel python36-pip
 pip3 install jupyter_core==4.4 jupyter
 # 3. install ipolyglot from source:
 git clone https://github.com/hpi-swa/ipolyglot.git
-cd ./pp19-3-jupyter-kernel && npm install .
+cd ./ipolyglot && npm install .
 ```
 
-On MacOs, run:
+On macOS, run:
 ```sh
 # 0. download and setup GraalVM
 # 1. install python and pip:
@@ -36,10 +36,10 @@ brew install pkg-config zeromq
 pip install jupyter_core==4.4 pyzmq jupyter
 # 3. install ipolyglot from source:
 git clone https://github.com/hpi-swa/ipolyglot.git
-cd ./pp19-3-jupyter-kernel && npm install . --python=python2.7
+cd ./ipolyglot && npm install . --python=python2.7
 ```
 
-Proceed by starting a jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
+Proceed by starting a Jupyter notebook server (`jupyter notebook`), opening a web-browser on `localhost:8888`, and creating a new GraalNode.js notebook.
 
 ## Running IPolyglot with Docker
 
@@ -49,7 +49,7 @@ You may also choose to run IPolyglot with docker:
 # 0. download and setup docker
 # 1. clone ipolyglot repository
 git clone https://github.com/hpi-swa/ipolyglot.git
-cd pp19-3-jupyter-kernel
+cd ipolyglot
 # 2. build an ipolyglot docker image
 docker build --tag=ipolyglot .
 # 3. run it! (choose a different port by changing 8888:<desired port>)
@@ -76,7 +76,7 @@ for example:
 my_dict = dict()
 ```
 
-See the `Demo.ipynb` for a detailed example.
+See the [`polyglot-notebook.ipynb`](demo/polyglot-notebook.ipynb) for a detailed example.
 
 Please be aware that you can use languages that have been [installed to your GraalVM](https://www.graalvm.org/docs/reference-manual/graal-updater/) only.
 
@@ -84,10 +84,10 @@ Please be aware that you can use languages that have been [installed to your Gra
 
 The Polyglot Jupyter Kernel shares all available global variables across all notebook cells. It provides an inspector extension to the Jupyter notebook frontend that lists all polyglot variables available.
 
-To install the extension, move the exention's code found in `varInspector` to your local installation of the `jupyter_contrib_nbextensions` package and install it, like so:
+To install the extension, move the extension's code found in `varInspector` to your local installation of the `jupyter_contrib_nbextensions` package and install it, like so:
 
 ```sh
-cd ./pp19-3-jupyter-kernel  # make sure to run all commands from the ipolyglot repository's root
+cd ./ipolyglot  # make sure to run all commands from the ipolyglot repository's root
 git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git
 pip install -e ./jupyter_contrib_nbextensions
 cp -r ./varInspector ./jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions/
@@ -101,7 +101,7 @@ Restart your notebook and toggle the variable inspector with the <kbd>🎯</kbd>
 
 This describes how to debug the IPolyglot Kernel, _not_ how to debug code executed in the code cells.
 
-The `jupyter notebook` command can be invoked like this `DEBUG=true jupyter-notebook --debug` to get debugging information about the messages sent between the kernel and the jupyter notebook.
+The `jupyter notebook` command can be invoked like this `DEBUG=true jupyter-notebook --debug` to get debugging information about the messages sent between the kernel and the Jupyter notebook.
 
 However, it has often been more helpful to pass debug flags to the GraalNode.js process which actually evaluates the code of Jupyter Notebook cells. This is done in node_modules/nel/lib/nel.js where `Session._args` is defined. There is a commented out line which already includes the necessary flags and can be commented in if need be. Then, a `debugger;` statement can be set anywhere in the NEL code and the Node.js session can be found in [chrome://inspect/#devices](chrome://inspect/#devices) for debugging.
 
