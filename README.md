@@ -3,6 +3,10 @@ A polyglot [Jupyter kernel](https://jupyter.readthedocs.io/en/latest/projects/ke
 
 <img width="1519" alt="Screenshot" src="https://user-images.githubusercontent.com/9486619/62134314-8d076000-b2e0-11e9-950e-b773f41ac085.png">
 
+## Blog posts
+
+Get some more background on how IPolyglot works, by reading the coverage at the [HPI Polyglot Programming Seminar](https://medium.com/graalvm/hpi-polyglot-programming-seminar-3fd06ffa59d2) by [Fabio Niephaus](https://medium.com/u/20b155c97c55?source=post_page-----3fd06ffa59d2----------------------). And thereafter follow on with the rest of the sections below.
+
 ## Running IPolyglot on Docker
 
 If you'd like to run IPolyglot on [Docker](https://www.docker.com/), this should get you started:
