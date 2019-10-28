@@ -138,7 +138,30 @@ In node_modules/nel/lib/nel.js, a write stream `tmp_stdout` is created which wri
 
 The code evaluation process itself defines a `stdout_tail` in node_modules/nel/lib/server/main.js which listens to any output redirected to the 'tmp_stdout.log' file and sends it to the Jupyter Notebook frontend.
 
+## Academic Publication
+
+*IPolyglot is based on the ideas presented in the following paper:*
+
+Fabio Niephaus, Eva Krebs, Christian Flach, Jens Lincke, and Robert Hirschfeld.
+[*PolyJuS: A Squeak/Smalltalk-based Polyglot Notebook System for the GraalVM*][px19_paper]. In
+Proceedings of [the Programming Experience 2019 (PX/19) Workshop][px19],
+companion volume to International Conference on the Art, Science, and
+Engineering of Programming (‹Programming›), co-located with the International
+Conference on the Art, Science, and Engineering of Programming (‹Programming›),
+6 pages, Genova, Italy, April 1, 2019, ACM DL.  
+[![doi][px19_doi]][px19_paper] [![bibtex][bibtex]][px19_bibtex] [![Preprint][preprint]][px19_pdf]
+
 
 ## Acknowledgments
 
 This projects builds on the tremendous work of [Nicolas Riesco](https://github.com/n-riesco)'s [IJavascript](https://github.com/n-riesco/ijavascript), a Javascript kernel for Jupyter notebooks.
+
+
+[bibtex]: https://img.shields.io/badge/bibtex-download-blue.svg
+[preprint]: https://img.shields.io/badge/preprint-download-blue.svg
+[px19]: https://2019.programming-conference.org/track/px-2019-papers
+[px19_bibtex]: https://dl.acm.org/downformats.cfm?id=3328434&parent_id=3328433&expformat=bibtex
+[px19_doi]: https://img.shields.io/badge/doi-10.1145/3328433.3328434-blue.svg
+[px19_paper]: https://doi.org/10.1145/3328433.3328434
+[px19_pdf]: https://fniephaus.com/2019/px19-polyglot-notebooks.pdf
+
