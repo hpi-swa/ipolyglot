@@ -29,7 +29,7 @@
     },
     "devDependencies": {
         "debug": "2",
-        "eslint": "2",
+        "eslint": "8",
         "jmp": "1",
         "uuid": "3"
     },
