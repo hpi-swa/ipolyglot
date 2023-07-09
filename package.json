@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "jp-kernel": "1",
-        "patch-package": "^6.1.2",
+        "patch-package": "^6.5.1",
         "smart-circular": "^1.0.2"
     },
     "devDependencies": {
